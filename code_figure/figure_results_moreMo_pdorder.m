@@ -3,6 +3,9 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce301";
+
+%%
 T = 125;
 txName = "2-3-4-5"; nTx = numel(strfind(txName,"-"))+1;
 LpName = "16";
@@ -42,12 +45,12 @@ for idx1 = 1:length(noteCombRange)
     moName = noteComb(2);
 
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
-        +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
-        
-    matname = "../mat_"+matversion+"/"+noteName+"_11/ce301"+osName+"/"+preName+".mat";
-        if isfile(matname)
-            disp(matname);
-            load(matname);
+        +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;        
+    matName = "../mat_"+matversion+"/"+noteName+"_11/"+ceName+osName+"/"+preName+".mat";
+
+        if isfile(matName)
+            disp(matName);
+            load(matName);
         else
             error("file not exist");
         end

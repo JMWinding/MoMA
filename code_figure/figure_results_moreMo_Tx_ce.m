@@ -3,6 +3,9 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce301";
+
+%%
 T = 125;
 LpName = "16";
 Lp2Name = "";
@@ -46,16 +49,11 @@ for idx1 = 1:length(noteCombRange)
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
-        
-        if moName == "1"
-            matname = "../"+matfolder+"/ce101"+osName+"/"+preName+".mat";
-        elseif moName == "2"
-            matname = "../"+matfolder+"/ce101"+osName+"/"+preName+".mat";
-        else
-            error("");
-        end
-        if isfile(matname)
-            load(matname);
+        matName = "../"+matfolder+"/"+ceName+osName+"/"+preName+".mat";
+
+        if isfile(matName)
+            disp(matName);
+            load(matName);
         else
             error("file not exist");
         end

@@ -3,15 +3,20 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce301";
+
+%%
 codeRange = ["goldman0", "ooc0", "ooc", "goldman"];
 bers = zeros(1,length(codeRange));
 xtickLabels = strings(1,length(codeRange));
 for codeIdx = 1:length(codeRange)
     codeName = codeRange(codeIdx);
 
-    matname = "../mat_"+matversion+"/mat1_11/ce301/emulates_125ms_2-3-4-5_16_"+codeName+"_1_gt-gt.mat";
-    if isfile(matname)
-        load(matname);
+    matName = "../mat_"+matversion+"/mat1_11/"+ceName+"/emulates_125ms_2-3-4-5_16_"+codeName+"_1_gt-gt.mat";
+
+    if isfile(matName)
+        disp(matName);
+        load(matName);
     else
         error("result does not exist");
     end

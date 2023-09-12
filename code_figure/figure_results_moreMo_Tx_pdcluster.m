@@ -65,9 +65,11 @@ for idx = 1:length(ceNameRange)
     
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
         +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+    matName = "../"+matfolder+"/"+ceName+"/"+preName+".mat";
     
-    if isfile("../"+matfolder+"/"+ceName+"/"+preName+".mat")
-        load("../"+matfolder+"/"+ceName+"/"+preName+".mat");
+    if isfile(matName)
+        disp(matName);
+        load(matName);
     else
         error("file not exist");
     end

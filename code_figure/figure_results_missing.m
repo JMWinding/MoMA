@@ -3,6 +3,9 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce301";
+
+%%
 f = figure("Position", [100 100 600 300]);
 box on; hold on; grid on;
 algover = "11";
@@ -27,7 +30,7 @@ for idx = 1:length(TRange)
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
         +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
     
-    matname = "../"+matfolder+"/ce301"+osName+"/"+preName+".mat";
+    matname = "../"+matfolder+"/"+ceName+osName+"/"+preName+".mat";
     if isfile(matname)
         load(matname);
     else

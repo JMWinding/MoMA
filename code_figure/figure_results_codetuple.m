@@ -3,15 +3,20 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce301";
+
+%%
 dataRange = ["1", "2", "1-2"];
 bers = zeros(2,2);
 for codeIdx = 1:length(dataRange)
     dataName = dataRange(codeIdx);
     nMo = numel(strfind(dataName,"-"))+1;
 
-    matname = "../mat_"+matversion+"/mat"+dataName+"_11/ce301/emulates_125ms_2-7_16_goldman_"+string(nMo)+"_gt-af0.mat";
-    if isfile(matname)
-        load(matname);
+    matName = "../mat_"+matversion+"/mat"+dataName+"_11/"+ceName+"/emulates_125ms_2-7_16_goldman_"+string(nMo)+"_gt-af0.mat";
+
+    if isfile(matName)
+        disp(matName);
+        load(matName);
     else
         error("result does not exist");
     end

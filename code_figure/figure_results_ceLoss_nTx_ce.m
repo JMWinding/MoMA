@@ -3,11 +3,14 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceRange = [1,5,12]+300;
+
+%%
 mol = "salt";
 topo = "line";
 switch topo
     case "line"
-        txNameRange = "2-3-4-5";%["2","3-4","2-3-4","2-3-4-5"];
+        txNameRange = ["2","3-4","2-3-4","2-3-4-5"];
         switch mol
             case "salt"
                 foldernote = "1";
@@ -34,7 +37,6 @@ alpha = 0.1;
 totalNet = 0;
 datarate = 2/1.75 * 100/116; % per Tx
 
-ceRange = [1,5,12]+300;
 legendName = strings(length(ceRange),1);
 berAll = nan(length(ceRange), length(txNameRange));
 
@@ -84,11 +86,12 @@ for ceIdx = 1:length(ceRange)
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+        matName = "../"+matfolder+"/"+ceName+"/"+preName+".mat";
         
-        if isfile("../"+matfolder+"/"+ceName+"/"+preName+".mat")
-            load("../"+matfolder+"/"+ceName+"/"+preName+".mat");
+        if isfile(matName)
+            disp(matName);
+            load(matName);
         else
-%             continue;
             error("file not exist");
         end
         berAll(ceIdx,idx) = mean(ber_temp, "all");

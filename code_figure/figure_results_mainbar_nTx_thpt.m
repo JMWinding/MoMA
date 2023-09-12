@@ -3,10 +3,13 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce301";
+
+%%
 f = figure("Position", [100 100 600 300]);
 box on; hold on; grid on;
 algover = "11";
-matfolder = "mat_"+matversion+"/mat1_"+algover+"/ce301";
+matfolder = "mat_"+matversion+"/mat1_"+algover+"/"+ceName;
 
 alpha = 0.1;
 totalNet = 0;
@@ -47,10 +50,11 @@ while domdma
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matname = "../"+matfolder+osName+"/"+preName+".mat";
+        matName = "../"+matfolder+osName+"/"+preName+".mat";
         
-        if isfile(matname)
-            load(matname);
+        if isfile(matName)
+            disp(matName);
+            load(matName);
         else
             error("file not exist");
         end
@@ -100,10 +104,11 @@ while true
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matname = "../"+matfolder+osName+"/"+preName+".mat";
+        matName = "../"+matfolder+osName+"/"+preName+".mat";
         
-        if isfile(matname)
-            load(matname);
+        if isfile(matName)
+            disp(matName);
+            load(matName);
         else
             error("file not exist");
         end
@@ -141,10 +146,11 @@ while true
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matname = "../"+matfolder+osName+"/"+preName+".mat";
+        matName = "../"+matfolder+osName+"/"+preName+".mat";
         
-        if isfile(matname)
-            load(matname);
+        if isfile(matName)
+            disp(matName);
+            load(matName);
         else
             error("file not exist");
         end
