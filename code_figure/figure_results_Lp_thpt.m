@@ -30,7 +30,7 @@ for moName = ["1"]
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
         
-        matname = "../"+matfolder+"/os"+osName+"/"+preName+".mat";
+        matname = "../"+matfolder+"/ce301"+osName+"/"+preName+".mat";
         if isfile(matname)
             load(matname);
         else

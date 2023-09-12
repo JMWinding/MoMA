@@ -6,15 +6,18 @@ if ~exist("matversion","var"), matversion = "author"; end
 f = figure("Position", [100 100 600 300]);
 box on; hold on; grid on;
 algover = "11";
-algoPD = "sc";
-matfolder = "mat_"+matversion+"/mat1_"+algover;
+matfolder = "mat_"+matversion+"/mat1_"+algover+"/ce301";
 
 alpha = 0.1;
 totalNet = 0;
 datarate = 2/1.75 * 100/116; % per Tx
 
+algoPD = "gt";
+algoName1 = "gt-af0";
+algoName2 = "sc-af0";
+
 domdma = true;
-xRange = 1:6;
+xRange = 1:4;
 if domdma
     pertxput = nan(3,length(xRange));
 else
@@ -40,14 +43,14 @@ while domdma
             continue;
         end
         txName = txNameRange(idx);
-        algoName = "gt-af0";
+        algoName = algoName1;
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matFile = "../"+matfolder+"/ce101"+osName+"/"+preName+".mat";
+        matname = "../"+matfolder+osName+"/"+preName+".mat";
         
-        if isfile(matFile)
-            load(matFile);
+        if isfile(matname)
+            load(matname);
         else
             error("file not exist");
         end
@@ -60,7 +63,7 @@ end
 
 %% MCDMA
 while true
-    nTxRange = 1:6;
+    nTxRange = xRange;
     T = 125;
     txNameRange = ["","2","","2-3","","2-3-4"];
     LpName = "16";
@@ -70,7 +73,7 @@ while true
     codeName = "gold";
     
     goodrate = nan(size(nTxRange));
-    for idx = [2,4,6,1,3,5]
+    for idx = [(1:floor(length(nTxRange)/2))*2,(1:ceil(length(nTxRange)/2))*2-1]
         if idx == 1
             pertxput(domdma+1,1) = pertxput(domdma+1,2);
             continue;
@@ -86,20 +89,21 @@ while true
         nTx = nTxRange(idx) / 2;
         txName = txNameRange(idx);
         if nTx==1
-            algoName = "gt-af0";
+            algoName = algoName1;
         else
             if algoPD == "gt"
-                algoName = "gt-af0";
+                algoName = algoName1;
             else
-                algoName = "sc-af0";
+                algoName = algoName2;
             end
         end
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+        matname = "../"+matfolder+osName+"/"+preName+".mat";
         
-        if isfile("../"+matfolder+"/ce101"+osName+"/"+preName+".mat")
-            load("../"+matfolder+"/ce101"+osName+"/"+preName+".mat");
+        if isfile(matname)
+            load(matname);
         else
             error("file not exist");
         end
@@ -112,7 +116,7 @@ end
 
 %% MMCDMA
 while true
-    nTxRange = 1:6;
+    nTxRange = xRange;
     T = 125;
     txNameRange = ["2","3-4","2-3-4","2-3-4-5","2-3-4-5-6","2-3-4-5-6-7"];
     LpName = "16";
@@ -126,24 +130,22 @@ while true
         nTx = nTxRange(idx);
         txName = txNameRange(idx);
         if nTx==1
-            algoName = "gt-af0";
+            algoName = algoName1;
         else
             if algoPD == "gt"
-                algoName = "gt-af0";
+                algoName = algoName1;
             else
-                algoName = "sc-af0";
+                algoName = algoName2;
             end
         end
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+        matname = "../"+matfolder+osName+"/"+preName+".mat";
         
-        if isfile("../"+matfolder+"/ce101"+osName+"/"+preName+".mat")
-            load("../"+matfolder+"/ce101"+osName+"/"+preName+".mat");
-        elseif isfile("../temp"+matfolder+"/ce101"+osName+"/"+preName+".mat")
-            load("../temp"+matfolder+"/ce101"+osName+"/"+preName+".mat");
+        if isfile(matname)
+            load(matname);
         else
-%             continue;
             error("file not exist");
         end
         goodrate(idx) = mean(ber_temp<=alpha,'all');

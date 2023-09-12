@@ -8,7 +8,7 @@ topo = "lineMo";
 switch topo
     case "line"
         foldernoteRange = ["1","5","1-3"];
-        ceNameRange = repmat("os",size(foldernoteRange));
+        ceNameRange = repmat("ce301",size(foldernoteRange));
         txNameRange = repmat("2-3-4-5",size(ceNameRange));
         nMoRange = [2,2,2];
     case "lineMo"
@@ -18,12 +18,12 @@ switch topo
         nMoRange = repmat(1,[1 6]);
     case "lineFork"
         foldernoteRange = repmat("4",[1 5]);
-        ceNameRange = repmat("os",size(foldernoteRange));
+        ceNameRange = repmat("ce301",size(foldernoteRange));
         txNameRange = ["2-3","3-4","2-3-4","2-3-5","2-3-4-5"];
         nMoRange = repmat(2,[1 5]);
     case "lineMix"
         foldernoteRange = repmat("1-3",[1 4]);
-        ceNameRange = repmat("os",size(foldernoteRange));
+        ceNameRange = repmat("ce301",size(foldernoteRange));
         txNameRange = ["2","3-4","2-3-4","2-3-4-5"];
         nMoRange = repmat(2,[1 4]);
 end

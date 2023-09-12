@@ -9,7 +9,7 @@ xtickLabels = strings(1,length(codeRange));
 for codeIdx = 1:length(codeRange)
     codeName = codeRange(codeIdx);
 
-    matname = "../mat_"+matversion+"/mat1_11/os/emulates_125ms_2-3-4-5_16_"+codeName+"_1_gt-gt.mat";
+    matname = "../mat_"+matversion+"/mat1_11/ce301/emulates_125ms_2-3-4-5_16_"+codeName+"_1_gt-gt.mat";
     if isfile(matname)
         load(matname);
     else
@@ -30,7 +30,7 @@ for codeIdx = 1:length(codeRange)
 end
 
 %%
-load("../mat_Submission/mat1_noncoherent/os/emulates_125ms_2-3-4-5_1_ooc0_1_noncoherent.mat");
+load("../mat_Submission/mat1_noncoherent/ce301/emulates_125ms_2-3-4-5_1_ooc0_1_noncoherent.mat");
 bers = [mean(ber_temp,"all"), bers];
 xtickLabels = ["[64]", xtickLabels];
 

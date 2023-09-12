@@ -44,7 +44,7 @@ for idx1 = 1:length(noteCombRange)
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
         +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
         
-    matname = "../mat_"+matversion+"/"+noteName+"_11/os"+osName+"/"+preName+".mat";
+    matname = "../mat_"+matversion+"/"+noteName+"_11/ce301"+osName+"/"+preName+".mat";
         if isfile(matname)
             disp(matname);
             load(matname);

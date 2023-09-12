@@ -9,7 +9,7 @@ for codeIdx = 1:length(dataRange)
     dataName = dataRange(codeIdx);
     nMo = numel(strfind(dataName,"-"))+1;
 
-    matname = "../mat_"+matversion+"/mat"+dataName+"_11/os/emulates_125ms_2-7_16_goldman_"+string(nMo)+"_gt-af0.mat";
+    matname = "../mat_"+matversion+"/mat"+dataName+"_11/ce301/emulates_125ms_2-7_16_goldman_"+string(nMo)+"_gt-af0.mat";
     if isfile(matname)
         load(matname);
     else

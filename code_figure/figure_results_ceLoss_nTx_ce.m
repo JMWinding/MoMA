@@ -34,7 +34,7 @@ alpha = 0.1;
 totalNet = 0;
 datarate = 2/1.75 * 100/116; % per Tx
 
-ceRange = [2,21:24];
+ceRange = [1,5,12]+300;
 legendName = strings(length(ceRange),1);
 berAll = nan(length(ceRange), length(txNameRange));
 

@@ -8,7 +8,7 @@ end
 
 %%
 cenote0 = 301;
-for cenote = [1,5,12]+100
+for cenote = [1,5,12]+300
 for pdnote = cenote
     weights_ce = GetCEWeights(cenote);
     weights_pd = GetCEWeights(pdnote);

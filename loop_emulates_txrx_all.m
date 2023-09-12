@@ -18,6 +18,7 @@ end
 if debug_pd
     prefixname = prefixname+"debug";
 end
+prefixname = prefixname+"_11";
 prefixname = prefixname+"/ce"+string(cenote);
 if cenote ~= pdnote
     prefixname = prefixname+"-pd"+string(pdnote);

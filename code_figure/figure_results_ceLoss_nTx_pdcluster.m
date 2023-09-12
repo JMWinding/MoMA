@@ -8,7 +8,7 @@ mol = "salt";
 topo = "line";
 switch topo
     case "line"
-        ceNameRange = ["ce2","ce4","ce8"];
+        ceNameRange = ["ce301","ce305","ce312"];
         txNameRange = repmat("2-3-4-5",size(ceNameRange));
         nMoRange = ones(size(ceNameRange));
         switch mol
@@ -18,7 +18,7 @@ switch topo
                 foldernote = "5";
         end
     case "fork"
-        ceNameRange = ["ce2","ce4","ce8"];
+        ceNameRange = ["ce301","ce305","ce312"];
         txNameRange = repmat("2-3-4-5",size(ceNameRange));
         nMoRange = ones(size(ceNameRange));
         switch mol

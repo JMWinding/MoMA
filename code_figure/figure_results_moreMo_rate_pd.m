@@ -25,7 +25,7 @@ while false
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
         
-        matname = "../mat_"+matversion+"/mat3/os"+osName+"/"+preName+".mat";
+        matname = "../mat_"+matversion+"/mat3/ce301"+osName+"/"+preName+".mat";
         if isfile(matname)
             load(matname);
         else
@@ -54,7 +54,7 @@ while true
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
         
-        matname = "../mat_"+matversion+"/mat1_11/os"+osName+"/"+preName+".mat";
+        matname = "../mat_"+matversion+"/mat1_11/ce301"+osName+"/"+preName+".mat";
         if isfile(matname)
             disp(matname);
             load(matname);
