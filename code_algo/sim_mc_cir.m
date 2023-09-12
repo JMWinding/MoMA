@@ -3,6 +3,7 @@ function cirs = sim_mc_cir(cirParam)
 try nMo = cirParam.nMo; catch nMo = 1; end
 try betas = cirParam.betas; catch
     betas = cell(nMo,1); betas(:) = {[10;0.1;1.5;0.1]};
+    % [50;0.4;1;0]
     % W', D/v2, d/v, tau
 end
 try T = cirParam.T; catch T = 1e-1; end

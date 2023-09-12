@@ -2,6 +2,8 @@
 
 This git repository is the artifact of the Sigcomm 2023 paper "Towards Practical and Scalable Molecular Networks".
 
+[![DOI](https://zenodo.org/badge/679340304.svg)](https://zenodo.org/badge/latestdoi/679340304)
+
 Our code as well as data are both available, while documentation is still under construction.
 
 ## How to download this artifact?

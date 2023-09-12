@@ -100,7 +100,7 @@ if dothisloop
     
     notes_temp = nan(totalruns,nMo);
     if ~mode_pd, ber_temp = nan(totalruns,nMo,nTx); end
-    if ~isequal(algoPD,"gt") && ~debug_pd, pdoff_temp = nan(totalruns,1,nTx); end
+    if ~debug_pd, pdoff_temp = nan(totalruns,1,nTx); end
     if debug_pd, pddebug_temp = cell(totalruns,1); end
     
 %     for kk = 1:totalruns
@@ -139,6 +139,8 @@ if dothisloop
         
         rxIn.algoPD = algoPD;
         rxIn.algoCE = algoCE;
+        rxIn.hPre = ceil(1250/T2);
+        rxIn.hPost = ceil(1750/T2);
         rxIn.debug_pd = debug_pd;
         rxIn.sameMo = sameMo;
         rxIn.weights_ce = weights_ce;
@@ -146,14 +148,21 @@ if dothisloop
         if mode_pd, rxIn.mode = "pd"; end
         if debug_pd, rxIn.thrd_pd = struct("corr",1,"ratio",1); end
         if algoPD == "gt" && algoCE == "af0"
-            rxIn.txOffset = cellfun(@(x)(x+randi([0 2])),rxIn.txOffset,"un",0);
+            pdoff = randi([0 2], [1 nTx]);
+            for i = 1:length(rxIn.txOffset)
+                rxIn.txOffset{i} = rxIn.txOffset{i} + pdoff(i);
+            end
         end
         
         rxOut = decode_mmo_coherent_MMoNTxSW11loop(rxIn);
     
         [~,idx] = sort(cell2mat(rxIn.txOffset),'ascend');
         if ~mode_pd, ber_temp(kk,:,:) = cell2mat(rxOut.BER(:,idx)); end
-        if ~isequal(algoPD,"gt") && ~debug_pd, pdoff_temp(kk,1,:) = rxOut.PDOff(idx); end
+        if isequal(algoPD,"gt")
+            pdoff_temp(kk,1,:) = pdoff;
+        elseif ~debug_pd
+            pdoff_temp(kk,1,:) = rxOut.PDOff(idx);
+        end
         if debug_pd, pddebug_temp{kk} = rxOut.debug_pd; end
         notes_temp(kk,:) = note_temp.';
     
@@ -161,7 +170,7 @@ if dothisloop
     
     save(submatname, "notes_temp");
     if ~mode_pd, save(submatname, "ber_temp", "-append"); end
-    if ~isequal(algoPD,"gt") && ~debug_pd, save(submatname, "pdoff_temp", "-append"); end
+    if ~debug_pd, save(submatname, "pdoff_temp", "-append"); end
     if debug_pd, save(submatname, "pddebug_temp", "-append"); end
 
     toc;
@@ -189,7 +198,7 @@ end
 if docombine
     notes_temp = cell(maxIdx,1);
     if ~mode_pd, ber_temp = cell(maxIdx,1); end
-    if ~isequal(algoPD,"gt") && ~debug_pd, pdoff_temp = cell(maxIdx,1); end
+    if ~debug_pd, pdoff_temp = cell(maxIdx,1); end
     if debug_pd, pddebug_temp = cell(maxIdx,1); end
 
     for subIdx = 1:maxIdx
@@ -197,7 +206,7 @@ if docombine
         temp = load(submatname);
         notes_temp(subIdx,1) = {temp.notes_temp};
         if ~mode_pd, ber_temp(subIdx,1) = {temp.ber_temp}; end
-        if ~isequal(algoPD,"gt") && ~debug_pd, pdoff_temp(subIdx,1) = {temp.pdoff_temp}; end
+        if ~debug_pd, pdoff_temp(subIdx,1) = {temp.pdoff_temp}; end
         if debug_pd, pddebug_temp(subIdx,1) = {temp.pddebug_temp}; end
     end
 
@@ -207,7 +216,7 @@ if docombine
         ber_temp = cell2mat(ber_temp);
         save(matname, "ber_temp", "-append");
     end
-    if ~isequal(algoPD,"gt") && ~debug_pd
+    if ~debug_pd
         pdoff_temp = cell2mat(pdoff_temp);
         save(matname, "pdoff_temp", "-append");
     end

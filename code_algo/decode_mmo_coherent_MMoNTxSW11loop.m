@@ -1,4 +1,4 @@
-function rxOut = decode_mmo_coherent_MMoNTxSW11ce(params)
+function rxOut = decode_mmo_coherent_MMoNTxSW11loop(params)
 % channel estimation in PD phase for two consecutive blocks
 % and compare to decide true/false
 try debug_pd = params.debug_pd; catch, debug_pd = false; end
@@ -46,6 +46,7 @@ try
     weights_ce = params.weights_ce;
 catch
     weights_ce = struct( ...
+        "afloss", "mean", ...
         "pos", 1, ...
         "posy", 0, ...
         "simTx", 1, ...
@@ -59,7 +60,7 @@ catch
     weights_pd = weights_ce;
 end
 try thrd_pd_corr = params.thrd_pd.corr; catch
-    thrd_pd_corr = 0.75;
+    thrd_pd_corr = 0.8;
 end
 try thrd_pd_ratio = params.thrd_pd.ratio; catch
     thrd_pd_ratio = 0.5;
@@ -100,7 +101,6 @@ try
     hPost = params.hPost;
 catch
     hPre = ceil(0.6/T); hPost = ceil(1.2/T);
-%     hPre = 7; hPost = 10;
 end
 chan = struct('hp', {cell(nMo,nTx)}, ...
     'hpre', {cell(nMo,nTx)}, ...
@@ -159,6 +159,7 @@ if debug_pd
 end
 
 %%
+isFirstPacket = true;
 while true
     %% clip windowed signals
     yr2 = cell(nMo,1);
@@ -205,9 +206,9 @@ while true
     end
     
     %% packet detection + temporal channel estimation
-    chan2 = chan;
+    chan_backup_gt = chan;
     for algoPD2 = [algoPD, "gt"]
-        chan = chan2;
+        chan = chan_backup_gt;
         lags_new = lags_temp;
 
     while true
@@ -289,13 +290,13 @@ while true
         pdIn.lags_gt = lags_gt;
         
         if isequal(algoPD2,"gt")
-            if ~debug_pd
-                lags_new = lags_gt;
-                break;
-            else
+%             if ~debug_pd
+%                 lags_new = lags_gt;
+%                 break;
+%             else
                 lags_all = lags;
                 lags_all(~isinf(lags_gt)) = lags_gt(~isinf(lags_gt));
-            end
+%             end
         elseif pdDo
             pd = PreambleDetectionSW8(pdIn);
             lags_all = pd.lags;
@@ -336,27 +337,36 @@ while true
                 moOffset2 = num2cell(cell2mat(moOffset)-cell2mat(chan.hpre));
             end
 
+            if isFirstPacket
+                nbPD = cell(nMo,1);
+                for j = 1:nMo
+                    nbPD{j} = mean(yr2{j}(1:min(lags_ce2)));
+                end
+            else
+                nbPD = chan.nb;
+            end
+
             % SIC
             dBit3_old = dBit2;
             lags3 = lags; lags3(~isinf(lags_ce2)) = lags_ce2(~isinf(lags_ce2));
+
             for niter = 0:nTx+1
                 if niter == nTx+1
                     break;
                 end
 
                 %% estimate channel
+                endIdxCE = max(lags_ce2(~isinf(lags_ce2))) + plen - hPre;
                 estimateIn2 = struct( ...
                     'noisemodel', noisemodel, 'isrepeat', isrepeat, ...
                     'yr', {yr2}, 'lags_ce', lags_ce2, 'lags_old', lags_old, ...
                     'moOffset', {moOffset2}, 'xChip', {xChip}, ...
                     'dBit', {dBit3_old}, 'pChip', {pChip}, ...
-                    'hPre', hPre, 'hPost', hPost, 'hp', {chan.hp}, ...
+                    'hPre', hPre, 'hPost', hPost, 'hp', {chan.hp}, 'nb', {nbPD}, ...
                     'algo', 'af', 'weights', weights_pd, 'code', code, ...
                     'sameMo', sameMo, ...
-                    'endIdx', max(lags_ce2(~isinf(lags_ce2))) + plen);
-                estimate = EstimateChannelMMoSW(estimateIn2);
-
-                chan3 = estimate;
+                    'endIdx', endIdxCE);
+                estimate2 = EstimateChannelMMoSW(estimateIn2);
 
                 %% decode
                 forwardIn = struct( ...
@@ -364,7 +374,7 @@ while true
                     'xChip', {xChip}, 'pChip', {pChip}, ...
                     'lags', lags3, ...
                     'moOffset', {moOffset}, 'hPres', {chan.hpre}, ...
-                    'chan', chan3, 'mode', 'pd', ...
+                    'chan', estimate2, 'mode', 'pd', ...
                     'endIdx', max(lags_ce2(~isinf(lags_ce2))) + plen, ...
                     'nTracks', nTracks, 'code', code);
                 if exist('checkpoint', 'var')
@@ -387,6 +397,7 @@ while true
                     dBit3_old = dBit3;
                 end
             end
+            
             if niter == nTx+1
                 % iteration does not converge in expected steps,
                 % so we assume false positive detection
@@ -397,16 +408,20 @@ while true
 
             % debug: compare channel estimation
             while debug_ce
+                f1 = figure("Units","Normalized","Outerposition",[0 0 1 1], ...
+                    "Name", "PD");
+                nTx2 = sum(~isinf(lags_ce2));
+
                 %%
-                f = figure('units','normalized','outerposition',[0 0 1 1]);
+                i2 = 1;
                 for i = 1:nTx
                     if isinf(lags_ce2(i)), continue; end
                     for j = 1:nMo
-                        temp1 = floor((-lags_ce2(i) - plen) / nChip);
-                        temp2 = floor((max(lags_ce2(~isinf(lags_ce2))) ...
-                            - lags_ce2(i)) / nChip);
+                        temp1 = floor((1 - lags_ce2(i) - plen) / nChip);
+                        temp2 = floor((endIdxCE - lags_ce2(i) - plen) / nChip);
+
                         % bits
-                        subplot(nTx,2*nMo,(i-1)*2*nMo+j*2-1);
+                        subplot(nTx2+2,2*nMo,(i2-1)*2*nMo+j*2-1);
                         hold on; box on; grid on;
                         stem(xBit{j,i});
                         stem(dBit2{j,i});
@@ -418,22 +433,17 @@ while true
                         end
     
                         % CIR
-                        subplot(nTx,2*nMo,(i-1)*2*nMo+j*2);
+                        subplot(nTx2+2,2*nMo,(i2-1)*2*nMo+j*2);
                         hold on; box on; grid on;
                         title("Tx"+num2str(i)+", Mo"+num2str(j)+", pd");
                         plot((1:length(chan_gt.hp{j,i}))-chan_gt.hpre{j,i}-1, chan_gt.hp{j,i}, '-o');
                         plot((1:length(chan.hp{j,i}))-chan.hpre{j,i}-1, chan.hp{j,i}, '-+');
                         if isinf(lags_ce2(i)), continue; end
-                        plot((1:length(estimate.hp{j,i}))-hPre-1, estimate.hp{j,i}, 'LineWidth', 2);
+                        plot((1:length(estimate2.hp{j,i}))-hPre-1, estimate2.hp{j,i}, 'LineWidth', 2);
                     end
+                    i2 = i2 + 1;
                 end
-                %%
-                close(f);
-                break;
-            end
 
-            % debug: compare reconstructed signal
-            while false
                 %%
                 yo0 = yr2; % confirmed packet, xbit, chan_gt
                 yo = yr2; % confirmed packet, xbit, chan
@@ -443,7 +453,7 @@ while true
                     yo0{j}(:) = chan_gt.nb{j};
                     yo{j}(:) = chan.nb{j};
                     yo2{j}(:) = chan.nb{j};
-                    yo3{j}(:) = estimate.nb{j};
+                    yo3{j}(:) = estimate2.nb{j};
                 end
                 for i = 1:nTx
                     if isinf(lags(i)) && isinf(lags_ce2(i)), continue; end
@@ -463,49 +473,57 @@ while true
                             yo{j} = RebuildKnownPacket(yo{j},xchips,chan.hp{j,i},delta);
                             yo2{j} = RebuildKnownPacket(yo2{j},dchips,chan.hp{j,i},delta);
                         end
-                        yo3{j} = RebuildKnownPacket(yo3{j},dchips,estimate.hp{j,i},delta);
+                        yo3{j} = RebuildKnownPacket(yo3{j},dchips,estimate2.hp{j,i},delta);
                     end
                 end
         
-                figure('units','normalized','outerposition',[0 0 1 1]);
                 for j = 1:nMo
-                    subplot(2,nMo,2*j-1); hold on; box on; grid on;
+                    % total
+                    subplot(nTx2+2,nMo,nTx2*nMo+j); hold on; box on; grid on;
                     plot(yr2{j});
                     plot(yo3{j});
+                    plot([endIdxCE,endIdxCE],ylim,'--k','LineWidth',2);
                     xticks(0:plen/2:3.5*plen); xlim([0,3.5*plen]);
                     legend('rx signal', 'temp signal');
-                    subplot(2,nMo,2*j); hold on; box on; grid on;
-%                     subplot(nMo,1,j); hold on; box on; grid on;
+                    title("Mol "+string(j)+" total");
+
+                    % subtract
+                    subplot(nTx2+2,nMo,(nTx2+1)*nMo+j); hold on; box on; grid on;
                     plot(yr2{j}-yo0{j});
                     plot(yr2{j}-yo{j});
                     plot(yr2{j}-yo2{j});
+                    plot([endIdxCE,endIdxCE],ylim,'--k','LineWidth',2);
                     xticks(0:plen/2:3.5*plen); xlim([0,3.5*plen]);
                     legend('gt residual', 'expected residual', 'actual residual');
+                    title("Mol "+string(j)+" SIC");
                 end
+
                 %%
+%                 close(f1);
                 break;
             end
 
             % compare channel of two consecutive blocks
-            estimateIn2 = struct( ...
+            estimateInHalf = struct( ...
                 'noisemodel', noisemodel, 'isrepeat', isrepeat, ...
                 'yr', {yr2}, 'lags_ce', lags_ce2, 'lags_old', lags_old, ...
                 'moOffset', {moOffset2}, 'xChip', {xChip}, ...
                 'dBit', {dBit3_old}, 'pChip', {pChip}, ...
-                'hPre', hPre, 'hPost', hPost, 'hp', {chan.hp}, ...
+                'hPre', hPre, 'hPost', hPost, 'hp', {estimate2.hp}, 'nb', {estimate2.nb}, ...
                 'algo', 'af', 'weights', weights_pd, 'code', code, ...
                 'sameMo', sameMo, ...
-                'endIdx', max(lags_ce2(~isinf(lags_ce2))) + plen/2);
-            estimate1 = EstimateChannelMMoSW(estimateIn2);
-            estimateIn2.sttIdx = max(lags_ce2(~isinf(lags_ce2))) + plen/2;
-            estimateIn2.endIdx = max(lags_ce2(~isinf(lags_ce2))) + plen;
-            estimate2 = EstimateChannelMMoSW(estimateIn2);
+                'endIdx', max(lags_ce2(~isinf(lags_ce2))) + round((plen-hPre)/2));
+            estimateHalf1 = EstimateChannelMMoSW(estimateInHalf);
+
+            estimateInHalf.sttIdx = max(lags_ce2(~isinf(lags_ce2))) + round((plen-hPre)/2);
+            estimateInHalf.endIdx = max(lags_ce2(~isinf(lags_ce2))) + (plen-hPre);
+            estimateHalf2 = EstimateChannelMMoSW(estimateInHalf);
 
             % compare channel
-            eval = EvaluateEstimate(estimate1, estimate2, lags_ce2);
+            eval = EvaluateEstimate(estimateHalf1, estimateHalf2, lags_ce2);
             
             % DEBUG METRIC
-            if debug_pd
+            while debug_pd
                 %
                 ind_ahead = lags_gt<lags_gt(idx_newp2);
                 cnt_ahead = sum(isinf(min(lags(ind_ahead),lags_new(ind_ahead))));
@@ -532,21 +550,22 @@ while true
                 ratio2_temp = zeros([1,size(ratio2_pd,[2,3])]);
                 ratio2_temp(1,:,:) = eval.ratio2;
                 ratio2_pd = [ratio2_pd; ratio2_temp];
+
+                break;
             end
 
-            ndetected = sum(~isnan(eval.corr(1,:)));
             eval.ratio(eval.ratio>1) = 1./eval.ratio(eval.ratio>1);
             eval.ratio2(eval.ratio2>1) = 1./eval.ratio2(eval.ratio2>1);
+
             if isequal(algoPD2,"gt") ...
                || (min(eval.wcorr,[],2,"omitnan") > thrd_pd_corr ...
-                   && min(mean(eval.ratio,1,"omitnan"),[],2,"omitnan") > thrd_pd_ratio) 
-%                || (mean(min(eval.corr,[],2,"omitnan")) > thrd_pd) % TODO 0.6 original
+                   && min(mean(eval.ratio,1,"omitnan"),[],2,"omitnan") > thrd_pd_ratio)
                 new_tx_confirmed = true;
                 lags_new(idx_newp2) = lags_newp(idx_newp2);
-%                 if ~isequal(algoCE,"gt")
-%                     lags_new(~isinf(lags_new)) = lags_new(~isinf(lags_new)) ...
-%                         - eval.lags(~isinf(lags_new));
-%                 end
+
+                chan.hp = estimate2.hp;
+                chan.nb = estimate2.nb;
+                isFirstPacket = false;
                 break;
             end
         end
@@ -593,9 +612,9 @@ while true
         lags_ce_last = max(lags_ce(~isinf(lags_ce)));
         lags_ce_next = min(lags_new(lags_new>lags_ce_last));
         if numel(lags_ce_next) == 0, lags_ce_next = inf; end
-        endIdx = max(lags_ce_last + hPost+1, ...
-            min(lags_ce_next - hPre, max(plen, lags_ce_last) + plen));
-        lags_ce(lags_new<endIdx) = lags_new(lags_new<endIdx);
+        endIdxCE = max(lags_ce_last + hPost+1, ...
+            min(lags_ce_next, max(plen, lags_ce_last) + plen) - hPre);
+        lags_ce(lags_new<endIdxCE) = lags_new(lags_new<endIdxCE);
 
         moOffset2 = num2cell(cell2mat(moOffset)-cell2mat(chan.hpre));
         estimateIn = struct( ...
@@ -603,28 +622,30 @@ while true
             'yr', {yr2}, 'lags_ce', lags_ce, 'lags_old', lags_old, ...
             'moOffset', {moOffset2}, 'xChip', {xChip}, ...
             'dBit', {dBit2}, 'pChip', {pChip}, ...
-            'hPre', hPre, 'hPost', hPost, 'hp', {chan.hp}, ...
+            'hPre', hPre, 'hPost', hPost, 'hp', {chan.hp}, 'nb', {chan.nb}, ...
             'algo', algoCE, 'weights', weights_ce, 'code', code, ...
             'sameMo', sameMo, ...
-            'endIdx', endIdx);
-%             'endIdx', max(plen, max(lags_ce(~isinf(lags_ce)))) + plen);
+            'endIdx', endIdxCE);
 
         estimateIn.hp = chan.hp;
         estimateIn.algo = algoCE;
         estimate = EstimateChannelMMoSW(estimateIn);
 
         % debug: compare channel estimation
-        while debug_ce
+        while debug_ce && sum(isinf(lags_ce))
+            f2 = figure("Units","Normalized","Outerposition",[0 0 1 1], ...
+                "Name", "CE");
+            nTx2 = sum(~isinf(lags_ce));
+
             %%
-            f = figure('units','normalized','outerposition',[0 0 1 1]);
+            i2 = 1;
             for i = 1:nTx
                 if isinf(lags_ce(i)), continue; end
                 for j = 1:nMo
-                    temp1 = floor((-lags_ce(i) - plen) / nChip);
-                    temp2 = floor((max(plen, max(lags_ce(~isinf(lags_ce)))) ...
-                        - lags_ce(i)) / nChip);
+                    temp1 = floor((1 - lags_ce(i) - plen) / nChip);
+                    temp2 = floor((endIdxCE - lags_ce(i) - plen) / nChip);
                     % bits
-                    subplot(nTx,2*nMo,(i-1)*2*nMo+j*2-1);
+                    subplot(nTx2+2,2*nMo,(i2-1)*2*nMo+j*2-1);
                     hold on; box on; grid on;
                     stem(xBit{j,i});
                     stem(dBit2{j,i});
@@ -636,7 +657,7 @@ while true
                     end
 
                     % CIR
-                    subplot(nTx,2*nMo,(i-1)*2*nMo+j*2);
+                    subplot(nTx2+2,2*nMo,(i2-1)*2*nMo+j*2);
                     hold on; box on; grid on;
                     title("Tx"+num2str(i)+", Mo"+num2str(j)+", ce");
                     plot((1:length(chan_gt.hp{j,i}))-chan_gt.hpre{j,i}-1, chan_gt.hp{j,i}, '-o');
@@ -644,14 +665,9 @@ while true
                     if isinf(lags_ce(i)), continue; end
                     plot((1:length(estimate.hp{j,i}))-hPre-1, estimate.hp{j,i}, 'LineWidth', 2);
                 end
+                i2 = i2 + 1;
             end
-            %%
-            close(f);
-            break;
-        end
 
-        % debug: compare reconstructed signal
-        while false
             %%
             yo = yr2;
             yo1 = yr2;
@@ -680,19 +696,22 @@ while true
                 end
             end
     
-            figure('units','normalized','outerposition',[0 0 1 1]);
             for j = 1:nMo
-                subplot(nMo,1,j); hold on; box on; grid on;
+                subplot(nTx2+2,nMo,[nTx2*nMo+j,(nTx2+1)*nMo+j]); hold on; box on; grid on;
                 plot(yr2{j});
                 plot(yo{j});
                 plot(yo1{j});
                 plot(yo2{j});
+                plot([endIdxCE,endIdxCE],ylim,'--k','LineWidth',2);
                 xlabel('sample index');
                 xticks(0:plen/2:swSize);
                 ylabel('signal');
                 legend('rx', 'gt', 'ce old', 'ce');
             end
+
             %%
+            if exist("f1","var") && isvalid(f1), close(f1); end
+            if isvalid(f2), close(f2); end
             break;
         end
 
@@ -704,9 +723,11 @@ while true
     lags_all = lags; lags_all(~isinf(lags_new)) = lags_new((~isinf(lags_new)));
     if min(lags_all) < plen
         if swEnd == ylen
-            endIdx = swEnd-swStart+1;
+            endIdxDC = swEnd-swStart+1;
+        elseif ~isequal(algoCE,'gt') && sum(~isinf(lags_ce)) > 0
+            endIdxDC = endIdxCE;
         else
-            endIdx = min(plen + 2*swAdv+moOffsetMax,swEnd-swStart+1);
+            endIdxDC = min(plen + 2*swAdv+moOffsetMax,swEnd-swStart+1);
         end
         forwardIn = struct( ...
             'yd', {yr2}, 'xBit', {xBit}, ...
@@ -715,7 +736,7 @@ while true
             'moOffset', {moOffset}, 'hPres', {chan.hpre}, ...
             'chan', chan, 'mode', 'de', ...
             'cpIdx', swAdv, 'nTracks', nTracks, ...
-            'endIdx', endIdx, 'code', code);
+            'endIdx', endIdxDC, 'code', code);
         if exist('checkpoint', 'var')
             forwardIn.checkpoint = checkpoint;
         end
