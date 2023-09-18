@@ -1,3 +1,9 @@
 desktop.ini
-heavy_algo/
-heavy_figure/
+*epfl*
+/decode_mmo_coherent_MMoNTxSW11ce.m
+
+/loop?_*.m
+/main?_*.m
+/code?_algo/
+
+/mat_temp/

@@ -3,17 +3,20 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce"+string(cenoteFinal);
+
+%%
 f = figure("Position", [100 100 600 300]);
 box on; hold on; grid on;
 algover = "11";
-matfolder = "mat_"+matversion+"/mat1_"+algover+"/ce301";
+matfolder = "mat_"+matversion+"/mat1_"+algover+"/"+ceName;
 
 alpha = 0.1;
 totalNet = 0;
 datarate = 2/1.75 * 100/116; % per Tx
 
-algoPD = "gt";
-algoName1 = "gt-af0";
+algoPD = "sc";
+algoName1 = "sc-af0";
 algoName2 = "sc-af0";
 
 domdma = true;
@@ -37,20 +40,21 @@ while domdma
     
     goodrate = nan(size(nTxRange));
     for idx = 1:length(nTxRange)
-        nTx = nTxRange(idx);
+        txName = txNameRange(idx);
+        nTx = numel(strfind(txName,"-"))+1;
         if nTx > 1
             pertxput(1,idx) =  pertxput(1,1);
             continue;
         end
-        txName = txNameRange(idx);
         algoName = algoName1;
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matname = "../"+matfolder+osName+"/"+preName+".mat";
+        matName = "../"+matfolder+osName+"/"+preName+".mat";
+        disp(matName);
         
-        if isfile(matname)
-            load(matname);
+        if isfile(matName)
+            load(matName);
         else
             error("file not exist");
         end
@@ -86,8 +90,8 @@ while true
             continue;
         end
         
-        nTx = nTxRange(idx) / 2;
         txName = txNameRange(idx);
+        nTx = numel(strfind(txName,"-"))+1;
         if nTx==1
             algoName = algoName1;
         else
@@ -100,10 +104,11 @@ while true
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matname = "../"+matfolder+osName+"/"+preName+".mat";
+        matName = "../"+matfolder+osName+"/"+preName+".mat";
+        disp(matName);
         
-        if isfile(matname)
-            load(matname);
+        if isfile(matName)
+            load(matName);
         else
             error("file not exist");
         end
@@ -127,8 +132,8 @@ while true
     
     goodrate = nan(size(nTxRange));
     for idx = 1:length(nTxRange)
-        nTx = nTxRange(idx);
         txName = txNameRange(idx);
+        nTx = numel(strfind(txName,"-"))+1;
         if nTx==1
             algoName = algoName1;
         else
@@ -141,10 +146,11 @@ while true
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
-        matname = "../"+matfolder+osName+"/"+preName+".mat";
+        matName = "../"+matfolder+osName+"/"+preName+".mat";
+        disp(matName);
         
-        if isfile(matname)
-            load(matname);
+        if isfile(matName)
+            load(matName);
         else
             error("file not exist");
         end
@@ -158,6 +164,7 @@ end
 %%
 b = bar(xRange, pertxput .* xRange.^totalNet);
 
+xticks(xRange);
 xlabel("Number of colliding TX");
 if totalNet
     ylabel("Network throughput (bps)");

@@ -3,15 +3,20 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce"+string(cenoteFinal);
+
+%%
 codeRange = ["goldman0", "ooc0", "ooc", "goldman"];
 bers = zeros(1,length(codeRange));
 xtickLabels = strings(1,length(codeRange));
 for codeIdx = 1:length(codeRange)
     codeName = codeRange(codeIdx);
 
-    matname = "../mat_"+matversion+"/mat1_11/ce301/emulates_125ms_2-3-4-5_16_"+codeName+"_1_gt-gt.mat";
-    if isfile(matname)
-        load(matname);
+    matName = "../mat_"+matversion+"/mat1_11/"+ceName+"/emulates_125ms_2-3-4-5_16_"+codeName+"_1_gt-gt.mat";
+    disp(matName);
+
+    if isfile(matName)
+        load(matName);
     else
         error("result does not exist");
     end
@@ -30,7 +35,8 @@ for codeIdx = 1:length(codeRange)
 end
 
 %%
-load("../mat_Submission/mat1_noncoherent/ce301/emulates_125ms_2-3-4-5_1_ooc0_1_noncoherent.mat");
+load("../mat_"+matversion+"/mat1_noncoherent/ce"+string(cenoteFinal)+"/emulates_125ms_2-3-4-5_16_ooc0_1_gt-gt.mat");
+disp(matName);
 bers = [mean(ber_temp,"all"), bers];
 xtickLabels = ["[64]", xtickLabels];
 

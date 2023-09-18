@@ -3,16 +3,19 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceRange = [1,5,12]+300;
+
+%%
 mol = "salt";
 topo = "line";
 switch topo
     case "line"
-        txNameRange = "2-3-4-5";%["2","3-4","2-3-4","2-3-4-5"];
+        txNameRange = ["2","3-4","2-3-4","2-3-4-5"];
         switch mol
             case "salt"
                 foldernote = "1";
             case "soda"
-                foldernote = "5";
+                foldernote = "3";
         end
     case "fork"
         txNameRange = ["2-3","3-4","2-3-4","2-3-5","2-3-4-5"];
@@ -34,7 +37,6 @@ alpha = 0.1;
 totalNet = 0;
 datarate = 2/1.75 * 100/116; % per Tx
 
-ceRange = [1,5,12]+300;
 legendName = strings(length(ceRange),1);
 berAll = nan(length(ceRange), length(txNameRange));
 
@@ -46,30 +48,13 @@ for ceIdx = 1:length(ceRange)
     % L2 head-tail loss
     % L3 similarity (not applicable for 1 molecule)
     % L4 smoothness
-    switch ceRange(ceIdx)
-        case 0
-            legendName(ceIdx) = "L0+L2+L4";
+    switch mod(ceRange(ceIdx),100)
         case 1
-            error("");
-            legendName(ceIdx) = "L0+L1+L2+L4";
-        case 2
             legendName(ceIdx) = "L0+L1+L2";
-        case 3
-            legendName(ceIdx) = "L0+L1+L4";
-        case 4
-            legendName(ceIdx) = "L0+L1";
         case 5
-            error("");
-            legendName(ceIdx) = "L0+L1+L4";
-        case 6
-            legendName(ceIdx) = "L0+L4";
-        case 7
-            legendName(ceIdx) = "L0+L1+L2+L4";
-        case 8
+            legendName(ceIdx) = "L0+L1";
+        case 12
             legendName(ceIdx) = "L0+L2";
-        case 9
-            error("");
-            legendName(ceIdx) = "L0+L1+L2";
     end
 
     T = 125;
@@ -84,11 +69,12 @@ for ceIdx = 1:length(ceRange)
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+        matName = "../"+matfolder+"/"+ceName+"/"+preName+".mat";
+        disp(matName);
         
-        if isfile("../"+matfolder+"/"+ceName+"/"+preName+".mat")
-            load("../"+matfolder+"/"+ceName+"/"+preName+".mat");
+        if isfile(matName)
+            load(matName);
         else
-%             continue;
             error("file not exist");
         end
         berAll(ceIdx,idx) = mean(ber_temp, "all");

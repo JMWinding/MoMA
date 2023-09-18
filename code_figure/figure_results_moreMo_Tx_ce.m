@@ -3,6 +3,9 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce"+string(cenoteFinal);
+
+%%
 T = 125;
 LpName = "16";
 Lp2Name = "";
@@ -15,7 +18,7 @@ topo = "line";
 %%
 switch topo
     case "line"
-        fnotes = ["1", "5"];
+        fnotes = ["1", "3"];
         txNameRange = ["2","3-4","2-3-4","2-3-4-5"];
     case "fork"
         fnotes = ["4", "5"];
@@ -46,16 +49,11 @@ for idx1 = 1:length(noteCombRange)
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
             +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
-        
-        if moName == "1"
-            matname = "../"+matfolder+"/ce101"+osName+"/"+preName+".mat";
-        elseif moName == "2"
-            matname = "../"+matfolder+"/ce101"+osName+"/"+preName+".mat";
-        else
-            error("");
-        end
-        if isfile(matname)
-            load(matname);
+        matName = "../"+matfolder+"/"+ceName+osName+"/"+preName+".mat";
+        disp(matName);
+
+        if isfile(matName)
+            load(matName);
         else
             error("file not exist");
         end

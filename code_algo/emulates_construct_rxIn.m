@@ -147,10 +147,12 @@ end
 assert(Lp == tx.Lp);
 
 yRx = rx(2:T2:end,2);
-yRxp = zeros((nChip*rxIn.Lp+rxOffset(j))*oversampling,1);
-for k = 1:length(yRxp)
-    yRxp(k) = yRx(ceil(rand()*nChip*oversampling)+1);
-end
+% yRxp = zeros((nChip*rxIn.Lp+rxOffset(j))*oversampling,1);
+% for k = 1:length(yRxp)
+%     yRxp(k) = yRx(ceil(rand()*nChip*oversampling)+1);
+% end
+yRxp = zeros((nChip*rxIn.Lp+rxOffset(j))*oversampling,1) ...
+    + mean(yRx(1:nChip*oversampling,1));
 
 if type == "ph"    
     y0 = mean(yRx(1:nChip*oversampling));

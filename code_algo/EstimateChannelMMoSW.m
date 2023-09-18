@@ -36,7 +36,14 @@ end
 
 try lags_old = params.lags_old; catch, lags_old = inf(1,nTx); end
 try endIdx = params.endIdx; catch, endIdx = 1.5*plen; end
-try sttIdx = params.sttIdx; catch, sttIdx = 1; end
+% try sttIdx = params.sttIdx; catch, sttIdx = 1; end
+try sttIdx = params.sttIdx; catch
+    if isinf(lags_ce(1))
+        sttIdx = 1;
+    else
+        sttIdx = max(1,lags_ce(1)+min(cell2mat(moOffset(:,1))));
+    end
+end
 
 try afloss = params.weights.afloss; catch, afloss = "mean"; end
 try nbest = params.nbest; catch, nbest = true; end
@@ -238,9 +245,12 @@ rval.hPre = hPre;
 rval.hPost = hPost;
 
 rval.stepsize = stepsize;
+rval.sttIdx = sttIdx;
+rval.endIdx = endIdx;
 
 end
 
+%% support functions
 function ret = relu(input)
 ret = input .* (input > 0);
 end

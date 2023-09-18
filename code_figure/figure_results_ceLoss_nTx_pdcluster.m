@@ -8,17 +8,17 @@ mol = "salt";
 topo = "line";
 switch topo
     case "line"
-        ceNameRange = ["ce301","ce305","ce312"];
+        ceNameRange = arrayfun(@(a)("ce"+string(a)),[1,5,12]+cenoteOffset);
         txNameRange = repmat("2-3-4-5",size(ceNameRange));
         nMoRange = ones(size(ceNameRange));
         switch mol
             case "salt"
                 foldernote = "1";
             case "soda"
-                foldernote = "5";
+                foldernote = "3";
         end
     case "fork"
-        ceNameRange = ["ce301","ce305","ce312"];
+        ceNameRange = arrayfun(@(a)("ce"+string(a)),[1,5,12]+cenoteOffset);
         txNameRange = repmat("2-3-4-5",size(ceNameRange));
         nMoRange = ones(size(ceNameRange));
         switch mol
@@ -91,9 +91,11 @@ for idx = 1:length(ceNameRange)
     
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
         +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+    matName = "../"+matfolder+"/"+ceName+"/"+preName+".mat";
+    disp(matName);
     
-    if isfile("../"+matfolder+"/"+ceName+"/"+preName+".mat")
-        load("../"+matfolder+"/"+ceName+"/"+preName+".mat");
+    if isfile(matName)
+        load(matName);
     else
         error("file not exist");
     end

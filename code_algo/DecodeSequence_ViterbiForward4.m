@@ -1,4 +1,4 @@
-function rval = DecodeSequence_ViterbiForward(params)
+function rval = DecodeSequence_ViterbiForward4(params)
 %% inputs
 try 
     yd = params.yd;
@@ -175,6 +175,7 @@ for jy = 1:endIdx
             end
         end
         clear('VStatesTemp2');
+
         % delete inf
         ind = isinf(cell2mat(VStatesTemp(:,end)));
         VStatesTemp(ind,:) = [];
@@ -182,9 +183,12 @@ for jy = 1:endIdx
         if size(VStatesTemp,1) == 0
             error('viterbi reaches all states with zero probability');
         end
-        % update probability
+
+        % probability of current state
+        ViterbiLogProbCurrent = nan(size(VStatesTemp,1),1);
         for k = 1:size(VStatesTemp,1)
             yh = chan.nb{j};
+
             for i = 1:nTx
                 if isinf(lags(i)), continue; end
                 if VStatesTemp{k,i}(1) == 0 && VStatesTemp{k,i}(end) == 0
@@ -209,27 +213,32 @@ for jy = 1:endIdx
                     % bit 0 in data correspond to nothing
                 end
             end
+
             switch mode
                 case 'pd'
-                    VStatesTemp{k,end} = VStatesTemp{k,end} ...
-                        + (-abs(yd{j}(jy) - yh)); ...* (1 + max(yh - yd{j}(jy), 0) / sqrt(yh));
+                    ViterbiLogProbCurrent(k) = -abs(yd{j}(jy) - yh);
                 case 'ce'
-                    VStatesTemp{k,end} = VStatesTemp{k,end} ...
-                        + ComputeViterbiLogProb(yd{j}(jy), yh, ...
-                          10*chan.nn{j}, 10*chan.np{j}); ...* (1 + max(yh - yd{j}(jy), 0) / sqrt(yh));
+                    ViterbiLogProbCurrent(k) =  ComputeViterbiLogProb(yd{j}(jy), yh, ...
+                          10*chan.nn{j}, 10*chan.np{j});
                 case 'de'
-                    VStatesTemp{k,end} = VStatesTemp{k,end} ...
-                        + ComputeViterbiLogProb(yd{j}(jy), yh, ...
+                    ViterbiLogProbCurrent(k) = ComputeViterbiLogProb(yd{j}(jy), yh, ...
                           chan.nn{j}, chan.np{j});
             end
         end
-        % delete inf
-        ind = isinf(cell2mat(VStatesTemp(:,end)));
-        VStatesTemp(ind,:) = [];
-        VTraces{j,jy+1}(ind,:) = [];
-        if size(VStatesTemp,1) == 0
-            error('viterbi reaches all states with zero probability');
+
+        % handle -inf
+        ind = isinf(ViterbiLogProbCurrent);
+        if sum(~ind) == 0
+            % if all probabilities are too small, skip this sample
+        else
+            % update joint probability
+            for k = 1:size(VStatesTemp,1)
+                VStatesTemp{k,end} = VStatesTemp{k,end} + ViterbiLogProbCurrent(k);
+            end
+            VStatesTemp(ind,:) = [];
+            VTraces{j,jy+1}(ind,:) = [];
         end
+
         % sort and truncate lower probability
         [~, ind] = sort(cell2mat(VStatesTemp(:,end)), 'descend');
         if length(ind) > nTracks

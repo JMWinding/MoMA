@@ -18,7 +18,7 @@ end
 if debug_pd
     prefixname = prefixname+"debug";
 end
-prefixname = prefixname+"_11";
+prefixname = prefixname+"_noncoherent";
 prefixname = prefixname+"/ce"+string(cenote);
 if cenote ~= pdnote
     prefixname = prefixname+"-pd"+string(pdnote);
@@ -147,7 +147,7 @@ if dothisloop
         if mode_pd, rxIn.mode = "pd"; end
         if debug_pd, rxIn.thrd_pd = struct("corr",1,"ratio",1); end
         
-        rxOut = decode_mmo_coherent_MMoNTxSW11loop(rxIn);
+        rxOut = decode_mmo_noncoherent_MMoNTx(rxIn);
     
         [~,idx] = sort(cell2mat(rxIn.txOffset),'ascend');
         if ~mode_pd, ber_temp(kk,:,:) = cell2mat(rxOut.BER(:,idx)); end

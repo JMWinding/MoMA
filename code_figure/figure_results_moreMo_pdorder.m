@@ -3,6 +3,9 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce"+string(cenoteFinal);
+
+%%
 T = 125;
 txName = "2-3-4-5"; nTx = numel(strfind(txName,"-"))+1;
 LpName = "16";
@@ -11,12 +14,12 @@ osName = ""; % "", "_2x"
 codeName = "goldman"; codelength = 14;
 algoName = "sc-af0";
 algover = "11";
-topo = "fork";
+topo = "line";
 
 %%
 switch topo
     case "line"
-        fnotes = ["1", "5"];
+        fnotes = ["1", "3"];
     case "fork"
         fnotes = ["4", "5"];
 end
@@ -42,15 +45,15 @@ for idx1 = 1:length(noteCombRange)
     moName = noteComb(2);
 
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
-        +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
-        
-    matname = "../mat_"+matversion+"/"+noteName+"_11/ce301"+osName+"/"+preName+".mat";
-        if isfile(matname)
-            disp(matname);
-            load(matname);
-        else
-            error("file not exist");
-        end
+        +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;        
+    matName = "../mat_"+matversion+"/"+noteName+"PD_11/"+ceName+osName+"/"+preName+".mat";
+    disp(matName);
+
+    if isfile(matName)
+        load(matName);
+    else
+        error("file not exist");
+    end
     
     for i = 1:nTx
         hitplot(idx1,i) = mean(abs(pdoff_temp(:,:,i))<=ceil(ceil(1e3/T)/2));

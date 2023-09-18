@@ -1,10 +1,12 @@
-% for ijk = 20:size(notes_temp,1)
+% DEBUG CODE 1
+% for ijk = 1:size(notes_temp,1)
 %     disp(ijk);
 %     disp(squeeze(ber_temp(ijk,:,:)));
 %     notes = arrayfun(@(a)(string(sprintf("%02d",a))),notes_temp(ijk,:).');
 %     main_emulate_txrx
 % end
 
+%%
 addpath("code_algo");
 warning('off');
 
@@ -16,16 +18,17 @@ isfigure = false;
 %%
 datanote = "dataset/data1";
 T = 125;
-Lp = 16;
-Lp2 = Lp;
+Lp = 16; Lp2 = Lp;
 pumpstr = "2-3-4-5";
 code = "goldman";
-notes = "03";
+notes = arrayfun(@(a)(string(sprintf("%02d",a))),randi([1 40],[2 1]));
+disp(notes);
 
-% type = "ph";
-% hPre = ceil(3e3/T);
-% hPost = ceil(7e3/T);
-% hlen = ceil(15e3/T);
+% T = 437;
+% Lp = 2; Lp2 = Lp;
+% pumpstr = "2";
+% code = "plain0";
+% notes = "01";
 
 %% get ground truth CIR
 rxIn = emulates_construct_rxIn(struct(...
@@ -36,10 +39,9 @@ rxIn = emulates_construct_rxIn(struct(...
     'code', code, ...
     'notes', notes, ...
     'T2', T, ...
-    'Lp2', Lp2));
-try rxIn.type = type; catch ; end
-try rxIn.hPre = hPre; catch ; end
-try rxIn.hPost = hPost; catch ; end
+    'Lp2', Lp2, ...
+    'hPre', ceil(1250/T), ...
+    'hPost', ceil(1750/T)));
 try rxIn.hlen = hlen; catch; end
 
 %% rxOut
@@ -48,33 +50,31 @@ rxIn.noisemodel = 'pois';
 % rxIn.algoPD = 'gt';
 % rxIn.algoCE = 'gt';
 % rxIn.mode = 'dc';
-% rxOut = decode_mmo_coherent_MMoNTxSW11(rxIn);
+% rxOut = decode_mmo_coherent_MMoNTxSW11ce(rxIn);
 % disp(cell2mat(rxOut.BER));
 % disp('----');
 
-rxIn.algoPD = 'gt';
+% rxIn.algoPD = 'gt';
+% rxIn.algoCE = 'af0';
+% rxIn.mode = 'dc';
+% rxIn.sameMo = true;
+% rxIn.weight_ce = GetCEWeights(301);
+% for i = 1:length(rxIn.txOffset)
+%     rxIn.txOffset{i} = rxIn.txOffset{i} + pdoff_temp(ijk,1,i);
+% end
+% % rxIn.debug_ce = true;
+% rxOut = decode_mmo_coherent_MMoNTxSW11ce(rxIn);
+% disp(cell2mat(rxOut.BER));
+% disp('----');
+
+rxIn.debug_pd = false;
+rxIn.algoPD = 'sc';
 rxIn.algoCE = 'af0';
 rxIn.mode = 'dc';
 rxIn.sameMo = true;
 rxOut = decode_mmo_coherent_MMoNTxSW11ce(rxIn);
-% disp(cell2mat(rxOut.BER));
-rxIn.txOffset = cellfun(@(a)(a+randi([0 2])),rxIn.txOffset,"un",0);
-rxIn.weights_ce  = struct("pos", 0.1, "posy", 0, "simTx", 0.1, "simMo", 0, "smth", 0, "cntr", 0.1);
-rxIn.sameMo = false;
-rxOut = decode_mmo_coherent_MMoNTxSW11ce(rxIn);
-% disp(cell2mat(rxOut.BER));
-rxIn.sameMo = true;
-rxOut = decode_mmo_coherent_MMoNTxSW11ce(rxIn);
-% disp(cell2mat(rxOut.BER));
-% disp('----');
-
-% rxIn.debug_pd = false;
-% rxIn.algoPD = 'sc';
-% rxIn.algoCE = 'af0';
-% rxIn.mode = 'dc';
-% rxOut = decode_mmo_coherent_MMoNTxSW11ce(rxIn);
-% disp(rxOut.BER);
-% disp('----');
+disp(cell2mat(rxOut.BER));
+disp('----');
 disp('------------------------------');
 
 %%

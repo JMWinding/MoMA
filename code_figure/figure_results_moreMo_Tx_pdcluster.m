@@ -4,29 +4,11 @@ if ~exist("matversion","var"), matversion = "author"; end
 
 %%
 ftype = "hist";
-topo = "lineMo";
-switch topo
-    case "line"
-        foldernoteRange = ["1","5","1-3"];
-        ceNameRange = repmat("ce301",size(foldernoteRange));
-        txNameRange = repmat("2-3-4-5",size(ceNameRange));
-        nMoRange = [2,2,2];
-    case "lineMo"
-        foldernoteRange = repmat("1",[1 6]);
-        ceNameRange = repmat("ce21",size(foldernoteRange));
-        txNameRange = ["2","3-4","2-3-4","2-3-4-5","2-3-4-5-6","2-3-4-5-6-7"];
-        nMoRange = repmat(1,[1 6]);
-    case "lineFork"
-        foldernoteRange = repmat("4",[1 5]);
-        ceNameRange = repmat("ce301",size(foldernoteRange));
-        txNameRange = ["2-3","3-4","2-3-4","2-3-5","2-3-4-5"];
-        nMoRange = repmat(2,[1 5]);
-    case "lineMix"
-        foldernoteRange = repmat("1-3",[1 4]);
-        ceNameRange = repmat("ce301",size(foldernoteRange));
-        txNameRange = ["2","3-4","2-3-4","2-3-4-5"];
-        nMoRange = repmat(2,[1 4]);
-end
+foldernoteRange = ["1","1","1"];
+ceNameRange = repmat("ce"+string(cenoteFinal),size(foldernoteRange));
+txNameRange = ["2-3-4-5","2-3-4-5","2-3"];
+nMoRange = [1,2,1];
+codeNameRange = ["goldman","goldman","gold"];
 
 %%
 algover = "11";
@@ -35,10 +17,13 @@ alpha = 0.1;
 totalNet = 0;
 datarate = 2/1.75 * 100/116; % per Tx
 
+thrdcorrRange = 0.5:0.01:0.9;
+thrdratioRange = 0:0.01:0.8;
+
 titleName = strings(length(ceNameRange),1);
 
 %%
-f = figure("Position", [100 100 1200 300]);
+f = figure("Position", [100 100 1200 300], "Name", ceNameRange(1));
 tiledlayout(size(ceNameRange,1),size(ceNameRange,2), ...
     "TileSpacing","compact", "Padding","compact");
 
@@ -47,11 +32,12 @@ for idx = 1:length(ceNameRange)
     ceName = ceNameRange(idx);    
     txName = txNameRange(idx);
     nMo = nMoRange(idx);
+    codeName = codeNameRange(idx);
 
     switch foldernoteRange(idx)
         case "1"
             titleName(idx) = strcat(repmat('salt-',[1,nMo-1]))+"salt";
-        case "5"
+        case "3"
             titleName(idx) = strcat(repmat('soda-',[1,nMo-1]))+"soda";
         case "1-3"
             titleName(idx) = "salt-soda";
@@ -60,14 +46,15 @@ for idx = 1:length(ceNameRange)
     T = 125;
     LpName = "16";
     Lp2Name = "";
-    codeName = "goldman";
     algoName = "sc-af0";
     
     preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
         +"_"+codeName+Lp2Name+"_"+string(nMo)+"_"+algoName;
+    matName = "../"+matfolder+"/"+ceName+"/"+preName+".mat";
+    disp(matName);
     
-    if isfile("../"+matfolder+"/"+ceName+"/"+preName+".mat")
-        load("../"+matfolder+"/"+ceName+"/"+preName+".mat");
+    if isfile(matName)
+        load(matName);
     else
         error("file not exist");
     end
@@ -131,12 +118,41 @@ for idx = 1:length(ceNameRange)
     end
     title(titleName(idx));
 
-%         if ~isempty(posTcorr) && ~isempty(posFcorr)
-%             svmModel = fitcsvm(svmX,svmy);
-%             svmLinex = linspace(0,1,101);
-%             svmLiney = -(svmModel.Beta(1)/svmModel.Beta(2)*svmLinex)-svmModel.Bias/svmModel.Beta(2);
-%             plot(svmLinex,svmLiney,"k-");
-%         end
+    %%
+    falseNeg = zeros(length(thrdcorrRange),length(thrdratioRange));
+    falsePos = zeros(length(thrdcorrRange),length(thrdratioRange));
+    for thrdcorrIdx = 1:length(thrdcorrRange)
+        thrdcorr = thrdcorrRange(thrdcorrIdx);
+        for thrdratioIdx = 1:length(thrdratioRange)
+            thrdratio = thrdratioRange(thrdratioIdx);
+            falseNeg(thrdcorrIdx,thrdratioIdx) = 1-mean(posTcorr>=thrdcorr & posTratio>=thrdratio);
+            falsePos(thrdcorrIdx,thrdratioIdx) = mean(posFcorr>=thrdcorr & posFratio>=thrdratio);
+        end
+    end
+    falseAll = falseNeg + falsePos;
+    [thrdcorrIdx,thrdratioIdx] = find(falseAll == min(falseAll,[],"all"), 1);
+    title([thrdcorrRange(thrdcorrIdx), thrdratioRange(thrdratioIdx), min(falseAll,[],"all")]);
+
+    %%
+    if nMo == 1
+        falseAll1 = falseAll;
+    elseif nMo == 2
+        falseAll2 = falseAll;
+        falseAll = falseAll1 + falseAll2;
+
+        [thrdcorrIdx,thrdratioIdx] = find(falseAll == min(falseAll,[],"all"), 1);
+        disp([thrdcorrRange(thrdcorrIdx), thrdratioRange(thrdratioIdx), ...
+            falseAll1(thrdcorrIdx,thrdratioIdx), falseAll2(thrdcorrIdx,thrdratioIdx)]);
+
+        [thrdcorrIdx,thrdratioIdx] = find(falseAll == min(falseAll,[],"all"), 1, "last");
+        disp([thrdcorrRange(thrdcorrIdx), thrdratioRange(thrdratioIdx), ...
+            falseAll1(thrdcorrIdx,thrdratioIdx), falseAll2(thrdcorrIdx,thrdratioIdx)]);
+
+        thrdcorrIdx = find(abs(thrdcorrRange-0.8)<1e-4);
+        thrdratioIdx = find(abs(thrdratioRange-0.2)<1e-4);
+        disp([thrdcorrRange(thrdcorrIdx), thrdratioRange(thrdratioIdx), ...
+            falseAll1(thrdcorrIdx,thrdratioIdx), falseAll2(thrdcorrIdx,thrdratioIdx)]);
+    end
 
 end
 

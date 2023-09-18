@@ -5,10 +5,13 @@ predur = hours(0);
 if isempty(gcp('nocreate'))
     parpool(feature('numcores'));
 end
+addpath("code_algo");
 
 %%
-cenote0 = 301;
-for cenote = [1,5,12]+300
+for cenote0 = 221
+    cenoteOffset = cenote0-1;
+
+for cenote = [1,5,12]+cenoteOffset
 for pdnote = cenote
     weights_ce = GetCEWeights(cenote);
     weights_pd = GetCEWeights(pdnote);
@@ -24,7 +27,7 @@ for datanote0c = {"1","3",["1";"3"],"2",["1";"2"], ...
     end
 
 for nMo = length(datanote0):2
-for code = ["goldman","gold","plain0"]
+for code = ["goldman","gold","plain0","goldman0","ooc","ooc0"]
 for T = [125,150,175,200,250,437]
 for pumpstr = ["2","2-3","3-4","2-3-4","2-3-5","2-3-4-5","2-7"]
     nTx = numel(strfind(pumpstr,"-"))+1;
@@ -48,7 +51,18 @@ for T2 = T
 for Lp2 = Lp
 
 %
-if false
+if (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && ismember(code,"ooc0") ...
+        && pumpstr=="2-3-4-5" && T==125 && Lp==16) % figure 10
+    debug_pd = false;
+    mode_pd = false;
+    algoPD = "gt";
+    algoCE = "gt";
+    loop_emulates_txrx_noncoherent
+end
+
+%
+if (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && ismember(code,["goldman","goldman0","ooc","ooc0"]) ...
+        && pumpstr=="2-3-4-5" && T==125 && Lp==16) % figure 10
     debug_pd = false;
     mode_pd = false;
     algoPD = "gt";
@@ -58,20 +72,20 @@ end
 
 %
 if (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldman" ...
-        && pumpstr=="2" && T==125 && Lp==16) ... % figure 6
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 6 debug
    || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="gold" ...
-        && pumpstr=="2" && T==125 && Lp==16) ... % figure 6
+        && ismember(pumpstr,["2","2-3"]) && T==125 && Lp==16) ... % figure 6 debug
    || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="plain0" ...
-        && pumpstr=="2" && T==437 && Lp==2) ... % figure 6
-   || (ismember(mod(cenote,100),[1,5,12]) && nMo==1 && isequal(datanote0,"1") ...
+        && pumpstr=="2" && T==437 && Lp==2) ... % figure 6 debug
+   || (ismember(mod(cenote,cenoteOffset),[1,5,12]) && nMo==1 && isequal(datanote0,"1") ...
         && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 11
-   || (ismember(cenote,cenote0) && ismember(nMo,[1,2]) && (numel(datanote0)==1&&ismember(datanote0,["1","3","4","5"])) ...
+   || (ismember(cenote,cenote0) && ismember(nMo,[1,2]) && (numel(datanote0)==1&&ismember(datanote0,["1","3","4","5"])) && code=="goldman" ...
         && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 12
-   || (ismember(cenote,cenote0) && nMo==2 && (numel(datanote0)==2&&ismember(datanote0.',[["1";"3"],["4";"5"]].',"rows")) ...
+   || (ismember(cenote,cenote0) && nMo==2 && (numel(datanote0)==2&&ismember(datanote0.',[["1";"3"],["4";"5"]].',"rows")) && code=="goldman" ...
         && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 12
-   || (ismember(cenote,cenote0) && nMo==1 && (numel(datanote0)==1&&ismember(datanote0,["1","2"])) ...
+   || (ismember(cenote,cenote0) && nMo==1 && (numel(datanote0)==1&&ismember(datanote0,["1","2"])) && code=="goldman" ...
         && pumpstr=="2-7" && T==125 && Lp==16) ... % figure 13
-   || (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,["1";"2"]) ...
+   || (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,["1";"2"]) && code=="goldman" ...
         && pumpstr=="2-7" && T==125 && Lp==16) % figure 13
     debug_pd = false;
     mode_pd = false;
@@ -81,7 +95,10 @@ if (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldm
 end
 
 %
-if false
+if (ismember(cenote,cenote0) && ismember(nMo,[1,2]) && isequal(datanote0,"1") && code=="goldman" ...
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % debug
+   || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="gold" ...
+        && ismember(pumpstr,["2","2-3"]) && T==125 && Lp==16) % debug
     debug_pd = true;
     mode_pd = true;
     algoPD = "sc";
@@ -91,7 +108,7 @@ end
 
 %
 if (ismember(cenote,cenote0) && ismember(nMo,[1,2]) && isequal(datanote0,"1") && code=="goldman" ...
-        && pumpstr=="2-3-4-5" && ismember(T,[125,150,175,200,250]) && Lp==16) ... % figure 14,15
+        && pumpstr=="2-3-4-5" && ismember(T,[125,150,175,200,250]) && Lp==16) % figure 14,15
     debug_pd = false;
     mode_pd = true;
     algoPD = "sc";
@@ -101,13 +118,15 @@ end
 
 %
 if (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldman" ...
-        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 6,9
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 6
    || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="gold" ...
         && ismember(pumpstr,["2","2-3"]) && T==125 && Lp==16) ... % figure 6
    || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="plain0" ...
         && pumpstr=="2" && T==437 && Lp==2) ... % figure 6
-   || (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldman" ...
+   || (ismember(cenote,cenote0) && ismember(nMo,[1,2]) && isequal(datanote0,"1") && code=="goldman" ...
         && pumpstr=="2-3-4-5" && T==125 && ismember(Lp,[4,8,16,32])) ... % figure 8
+   || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="goldman" ...
+        && ismember(pumpstr,["3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) % figure 9
     debug_pd = false;
     mode_pd = false;
     algoPD = "sc";
@@ -115,6 +134,7 @@ if (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldm
     loop_emulates_txrx_all
 end
 
+end
 end
 end
 end

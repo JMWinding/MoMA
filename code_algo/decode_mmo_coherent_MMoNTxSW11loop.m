@@ -63,7 +63,7 @@ try thrd_pd_corr = params.thrd_pd.corr; catch
     thrd_pd_corr = 0.8;
 end
 try thrd_pd_ratio = params.thrd_pd.ratio; catch
-    thrd_pd_ratio = 0.5;
+    thrd_pd_ratio = 0.2;
 end
 
 debug_pd = debug_pd & ~isequal(algoPD,"gt");
@@ -290,13 +290,8 @@ while true
         pdIn.lags_gt = lags_gt;
         
         if isequal(algoPD2,"gt")
-%             if ~debug_pd
-%                 lags_new = lags_gt;
-%                 break;
-%             else
-                lags_all = lags;
-                lags_all(~isinf(lags_gt)) = lags_gt(~isinf(lags_gt));
-%             end
+            lags_all = lags;
+            lags_all(~isinf(lags_gt)) = lags_gt(~isinf(lags_gt));
         elseif pdDo
             pd = PreambleDetectionSW8(pdIn);
             lags_all = pd.lags;
@@ -482,7 +477,8 @@ while true
                     subplot(nTx2+2,nMo,nTx2*nMo+j); hold on; box on; grid on;
                     plot(yr2{j});
                     plot(yo3{j});
-                    plot([endIdxCE,endIdxCE],ylim,'--k','LineWidth',2);
+                    plot([estimate2.sttIdx,estimate2.sttIdx],ylim,'-k','LineWidth',2);
+                    plot([estimate2.endIdx,estimate2.endIdx],ylim,'--k','LineWidth',2);
                     xticks(0:plen/2:3.5*plen); xlim([0,3.5*plen]);
                     legend('rx signal', 'temp signal');
                     title("Mol "+string(j)+" total");
@@ -492,7 +488,8 @@ while true
                     plot(yr2{j}-yo0{j});
                     plot(yr2{j}-yo{j});
                     plot(yr2{j}-yo2{j});
-                    plot([endIdxCE,endIdxCE],ylim,'--k','LineWidth',2);
+                    plot([estimate2.sttIdx,estimate2.sttIdx],ylim,'-k','LineWidth',2);
+                    plot([estimate2.endIdx,estimate2.endIdx],ylim,'--k','LineWidth',2);
                     xticks(0:plen/2:3.5*plen); xlim([0,3.5*plen]);
                     legend('gt residual', 'expected residual', 'actual residual');
                     title("Mol "+string(j)+" SIC");
@@ -632,7 +629,7 @@ while true
         estimate = EstimateChannelMMoSW(estimateIn);
 
         % debug: compare channel estimation
-        while debug_ce && sum(isinf(lags_ce))
+        while debug_ce && sum(~isinf(lags_ce))
             f2 = figure("Units","Normalized","Outerposition",[0 0 1 1], ...
                 "Name", "CE");
             nTx2 = sum(~isinf(lags_ce));
@@ -702,7 +699,8 @@ while true
                 plot(yo{j});
                 plot(yo1{j});
                 plot(yo2{j});
-                plot([endIdxCE,endIdxCE],ylim,'--k','LineWidth',2);
+                plot([estimate.sttIdx,estimate.sttIdx],ylim,'-k','LineWidth',2);
+                plot([estimate.endIdx,estimate.endIdx],ylim,'--k','LineWidth',2);
                 xlabel('sample index');
                 xticks(0:plen/2:swSize);
                 ylabel('signal');

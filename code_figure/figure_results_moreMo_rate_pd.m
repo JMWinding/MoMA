@@ -3,6 +3,9 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
+ceName = "ce"+string(cenoteFinal);
+
+%%
 f = figure("Position", [100 100 600 300]);
 box on; hold on; grid on;
 algoName = "sc-af0";
@@ -23,11 +26,12 @@ while false
         T = TRange(TIdx);
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
-            +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
-        
-        matname = "../mat_"+matversion+"/mat3/ce301"+osName+"/"+preName+".mat";
-        if isfile(matname)
-            load(matname);
+            +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;        
+        matName = "../mat_"+matversion+"/mat3/"+ceName+osName+"/"+preName+".mat";
+        disp(matName);
+
+        if isfile(matName)
+            load(matName);
         else
             error("file not exist");
         end
@@ -52,12 +56,12 @@ while true
         T = TRange(TIdx);
         
         preName = "emulates_"+num2str(T)+"ms_"+txName+"_"+LpName ...
-            +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;
-        
-        matname = "../mat_"+matversion+"/mat1_11/ce301"+osName+"/"+preName+".mat";
-        if isfile(matname)
-            disp(matname);
-            load(matname);
+            +"_"+codeName+Lp2Name+"_"+moName+"_"+algoName;        
+        matName = "../mat_"+matversion+"/mat1PD_11/ce"+string(cenoteFinal)+osName+"/"+preName+".mat";
+        disp(matName);
+
+        if isfile(matName)
+            load(matName);
         else
             error("file not exist");
         end
