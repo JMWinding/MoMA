@@ -23,7 +23,7 @@ const unsigned int DisposedTime = 10000;
 // **** Pump Parameters ****
 const int nTx = 2;
 const int motors[nTx] = {2, 3};
-const int motorOffsets[nTx] = {20, 20+14*(1+prelen)};
+const int motorOffsets[nTx] = {20, 20+14* (1+prelen)};
 const float motorCon[nTx] = {10, 10};
 const unsigned int TotalSymbols = 100;
 
@@ -44,12 +44,10 @@ int randlist[7];
 int motorOffsets2[nTx];
 
 // **** TxRx Sync for Record ****
-const int sync = 9;
-const int ack = 8;
 const int chipSelect = 53;
-/*
+/* Arduino Uno
  * SD card attached to SPI bus as follows:
- ** CS   - pin 10  (Chip Select)
+ ** CS   - pin 10 (Chip Select)
  ** MOSI - pin 11
  ** MISO - pin 12
  ** CLK  - pin 13
@@ -89,53 +87,50 @@ void tx1OnInit (void) {
 Ticker timerTx1OnInit (tx1OnInit, ChipInterval, 0, MILLIS);
 
 // **** Setup ****
-void setup() 
+void setup () 
 {
   // initialize serial communication with computer:
-  Serial.begin(115200);
-  while (!Serial) ;
+  Serial.begin (115200);
+  Serial1.begin (19200);
   
   // setup pins
   for (int i = 0; i < nTx; i++)
   {
     pinMode (motors[i], OUTPUT);
   }
-  pinMode(sync, OUTPUT);
-  pinMode(ack, INPUT);
-  digitalWrite(sync, LOW);
 
   // Initialize SD Card
-  Serial.println("Init SD");
-  if (!SD.begin(chipSelect)) 
+  Serial.println ("Init SD");
+  if (!SD.begin (chipSelect)) 
   {
-    Serial.println("Init fail");
-    while (1);
+    Serial.println ("Init fail");
+    exit (0);
   }
-  Serial.println("Init done");
-  
+  Serial.println ("Init done");
+
   // load CDMA settings
-  sprintf(TxSettingFile, "goldman.txt");
+  sprintf (TxSettingFile, "goldman.txt");
   if (!SD.exists (TxSettingFile))
   {
-    Serial.println("Setting not exist");
-    Serial.println("");
-    while(1);
+    Serial.println ("Setting not exist");
+    Serial.println ("");
+    exit (0);
   }
   Serial.print ("Setting file Name: ");
   Serial.println (TxSettingFile);
   settingFile = SD.open (TxSettingFile, FILE_READ);
   if (!settingFile)
   {
-    Serial.println("Setting open fail");
-    Serial.println("");
-    while(1);
+    Serial.println ("Setting open fail");
+    Serial.println ("");
+    exit (0);
   }
   cdmanum = settingFile.parseInt ();
   goldlen = settingFile.parseInt ();
   cdmalen = goldlen * 2;
   totalChips = (prelen + TotalSymbols) * cdmalen;
   #if debug
-  Serial.println(goldlen);
+  Serial.println (goldlen);
   #endif
   for (int i = 0; i < cdmanum; i++)
   {
@@ -143,187 +138,186 @@ void setup()
     {
       cdmacode[i][j] = settingFile.parseInt ();
       #if debug
-      Serial.print(cdmacode[i][j]);
+      Serial.print (cdmacode[i][j]);
       #endif
     }
     #if debug
-    Serial.println("");
+    Serial.println ("");
     #endif
   }
   settingFile.close ();
   Serial.println ("Setting loaded");
+  delay (500);
+
+  // wait for rx to set up
+  Serial.println ("Waiting for Rx to set up...");
+  while (!Serial1.available ())
+  {
+    delay (1000);
+    Serial.println ("Waiting...");
+  }
+  if (Serial1.read () != 'a')
+  {
+    Serial.println ("Rx sent a wrong message");
+    exit (0);
+  }
+  Serial.println ("Rx set up confirmed");
   
   // prepare the pumps
-  Serial.println("Set up");
-  Serial.println("Pipe in water");
+  Serial.println ("Set up");
+  Serial.println ("Pipe in water");
   turn_off_all ();
-  delay(DisposedTime);
-  Serial.println("Fill the tubes");
+  delay (DisposedTime);
+  Serial.println ("Fill the tubes");
   turn_on_all ();
-  delay(DisposedTime);
-  Serial.println("Clear the tubes");
+  delay (DisposedTime);
+  Serial.println ("Clear the tubes");
   turn_off_all ();
-  delay(DisposedTime);
-  Serial.println("Set up done");
-  Serial.println("");
-  Serial.println("");
+  delay (DisposedTime);
+  Serial.println ("Set up done");
+  Serial.println ("");
+  Serial.println ("");
   
-  randomSeed(analogRead(0));
+  randomSeed (analogRead (0));
 }
 
-void loop() {
-  delay(5000);
+void loop () {
+  delay (5000);
 
-  switch(digitalRead(ack))
+  for (int fileIndex = fileIndexStart; fileIndex <= fileIndexEnd; fileIndex++)
   {
-    case LOW:
-      // Rx is not synced
-      turn_off_all();
-      delay(ChipInterval);
-      Serial.println("AMotors stopped");
-      Serial.println("");
-      Serial.println("");
+    // check if write file exists not
+    sprintf (TxRecordFile, "%02d.txt", fileIndex);
+    if (SD.exists (TxRecordFile)) 
+    {
+      SD.remove (TxRecordFile);
+      #if debug
+      Serial.println ("File removed");
+      #endif
+    }
+    
+    // randomness
+    for (int i = 0; i < cdmanum; i++)
+    {
+      randlist[i] = i;
+    }
+    for (int i = 0; i < nTx; i++)
+    {
+      int temp = random (cdmanum-i);
+      cdmaidx[i] = randlist[temp];
+      randlist[temp] = randlist[cdmanum-i-1];
+      motorOffsets2[i] = random (cdmalen);
+    }
+
+    // create record file
+    Serial.print ("File Name: ");
+    Serial.println (TxRecordFile);
+    recordFile = SD.open (TxRecordFile, FILE_WRITE);
+    if (!recordFile)
+    {
+      Serial.println ("Record open fail");
+      Serial.println ("");
+      exit (0);
+    }
+    
+    // start collecting data
+    recordFile.print (ChipInterval);
+    recordFile.print (" ");
+    recordFile.print (TotalSymbols);
+    recordFile.print (" ");
+    recordFile.print (nTx);
+    recordFile.print (" ");
+    recordFile.print (goldlen);
+    recordFile.print (" ");
+    recordFile.print (prelen);
+    recordFile.println ("");
+
+    for (int i = 0; i < nTx; i++)
+    {
+      #if debug
+      Serial.print (" (");
+      Serial.print (motors[i]);
+      Serial.print (", ");
+      Serial.print (motorOffsets[i]);
+      Serial.print (", ");
+      Serial.print (motorOffsets2[i]);
+      Serial.print (", ");
+      Serial.print (motorCon[i]);
+      Serial.print ("), ");
+
+      Serial.print (" (code ");
+      Serial.print (cdmaidx[i]);
+      Serial.println (")");
+      #endif
+      
+      recordFile.print (" (");
+      recordFile.print (motors[i]);
+      recordFile.print (", ");
+      recordFile.print (motorOffsets[i]);
+      recordFile.print (", ");
+      recordFile.print (motorOffsets2[i]);
+      recordFile.print (", ");
+      recordFile.print (motorCon[i]);
+      recordFile.print ("), ");
+
+      recordFile.print (" (code ");
+      recordFile.print (cdmaidx[i]);
+      recordFile.println (")");
+    }
+    
+    Serial.println ("Random bits");
+
+    Serial.println ("START");
+    recordFile.println ("START");
+
+    // set counter
+    tx0OnInitCounter = motorOffsets[0]+motorOffsets2[0];
+    tx1OnInitCounter = motorOffsets[1]+motorOffsets2[1];
+
+    // Notify Rx to start
+    Serial1.write ('a');
+    delay (200);
+
+    timerTx0OnInit.start ();
+    timerTx1OnInit.start ();
+    while (1)
+    {
+      timerTx0OnInit.update ();
+      if (timerTx0On.state () == status_t::RUNNING) { timerTx0OnInit.stop (); }
+      timerTx0On.update ();
+      if (timerTx0On.counter () >= totalChips) { timerTx0On.stop (); }
+      timerTx0Off.update ();
+      timerTx1OnInit.update ();
+      if (timerTx1On.state () == status_t::RUNNING) { timerTx1OnInit.stop (); }
+      timerTx1On.update ();
+      if (timerTx1On.counter () >= totalChips) { timerTx1On.stop (); }
+      timerTx1Off.update ();
+
+      if (timerTx0OnInit.state () != status_t::STOPPED) { continue; }
+      if (timerTx0On.state () != status_t::STOPPED) { continue; }
+      if (timerTx0Off.state () != status_t::STOPPED) { continue; }
+      if (timerTx1OnInit.state () != status_t::STOPPED) { continue; }
+      if (timerTx1On.state () != status_t::STOPPED) { continue; }
+      if (timerTx1Off.state () != status_t::STOPPED) { continue; }
+
       break;
+    }
 
-    case HIGH:
-      // Rx is synced
-      for (int fileIndex = fileIndexStart; fileIndex <= fileIndexEnd; fileIndex++)
-      {
-        // check if write file exists not
-        sprintf(TxRecordFile, "%02d.txt", fileIndex);
-        if (SD.exists (TxRecordFile)) 
-        {
-          SD.remove (TxRecordFile);
-          #if debug
-          Serial.println("File removed");
-          #endif
-        }
-        
-        // randomness
-        for (int i = 0; i < cdmanum; i++)
-        {
-          randlist[i] = i;
-        }
-        for (int i = 0; i < nTx; i++)
-        {
-          int temp = random(cdmanum-i);
-          cdmaidx[i] = randlist[temp];
-          randlist[temp] = randlist[cdmanum-i-1];
-          motorOffsets2[i] = random(cdmalen);
-        }
+    delay (DisposedTime);
 
-        // create record file
-        Serial.print("File Name: ");
-        Serial.println(TxRecordFile);
-        recordFile = SD.open(TxRecordFile, FILE_WRITE);
-        if (!recordFile)
-        {
-          Serial.println("Record open fail");
-          Serial.println("");
-          while(1);
-        }
-        
-        // start collecting data
-        recordFile.print(ChipInterval);
-        recordFile.print(" ");
-        recordFile.print(TotalSymbols);
-        recordFile.print(" ");
-        recordFile.print(nTx);
-        recordFile.print(" ");
-        recordFile.print(goldlen);
-        recordFile.print(" ");
-        recordFile.print(prelen);
-        recordFile.println("");
+    // Notify Rx to end
+    Serial1.write ('z');
+    delay (200);
+    Serial.println ("END");
+    Serial.println ("");
+    Serial.println ("");
+    recordFile.close ();
 
-        for (int i = 0; i < nTx; i++)
-        {
-          #if debug
-          Serial.print("(");
-          Serial.print(motors[i]);
-          Serial.print(", ");
-          Serial.print(motorOffsets[i]);
-          Serial.print(", ");
-          Serial.print(motorOffsets2[i]);
-          Serial.print(", ");
-          Serial.print(motorCon[i]);
-          Serial.print("), ");
-
-          Serial.print("(code ");
-          Serial.print(cdmaidx[i]);
-          Serial.println(")");
-          #endif
-          
-          recordFile.print("(");
-          recordFile.print(motors[i]);
-          recordFile.print(", ");
-          recordFile.print(motorOffsets[i]);
-          recordFile.print(", ");
-          recordFile.print(motorOffsets2[i]);
-          recordFile.print(", ");
-          recordFile.print(motorCon[i]);
-          recordFile.print("), ");
-
-          recordFile.print("(code ");
-          recordFile.print(cdmaidx[i]);
-          recordFile.println(")");
-        }
-        
-        Serial.println("Random bits");
-
-        Serial.println("START");
-        recordFile.println("START");
-
-        // set counter
-        tx0OnInitCounter = motorOffsets[0]+motorOffsets2[0];
-        tx1OnInitCounter = motorOffsets[1]+motorOffsets2[1];
-
-        // Notify Rx to start
-        digitalWrite(sync, HIGH);
-        delay(200);
-
-        timerTx0OnInit.start ();
-        timerTx1OnInit.start ();
-        while (1)
-        {
-          timerTx0OnInit.update ();
-          if (timerTx0On.state () == status_t::RUNNING) { timerTx0OnInit.stop (); }
-          timerTx0On.update ();
-          if (timerTx0On.counter() >= totalChips) { timerTx0On.stop (); }
-          timerTx0Off.update ();
-          timerTx1OnInit.update ();
-          if (timerTx1On.state () == status_t::RUNNING) { timerTx1OnInit.stop (); }
-          timerTx1On.update ();
-          if (timerTx1On.counter() >= totalChips) { timerTx1On.stop (); }
-          timerTx1Off.update ();
-
-          if (timerTx0OnInit.state () != status_t::STOPPED) { continue; }
-          if (timerTx0On.state () != status_t::STOPPED) { continue; }
-          if (timerTx0Off.state () != status_t::STOPPED) { continue; }
-          if (timerTx1OnInit.state () != status_t::STOPPED) { continue; }
-          if (timerTx1On.state () != status_t::STOPPED) { continue; }
-          if (timerTx1Off.state () != status_t::STOPPED) { continue; }
-
-          break;
-        }
-
-        delay(DisposedTime);
-
-        // Notify Rx to end
-        digitalWrite(sync, LOW);
-        delay(200);
-        Serial.println("END");
-        Serial.println("");
-        Serial.println("");
-        recordFile.close();
-
-      }
-      while(1);
-      break;
   }
 }
 
 // Preparing pumps actions
-void turn_off_all(void)
+void turn_off_all (void)
 {
   for (int i = 0; i < nTx; i++)
   {
@@ -374,7 +368,7 @@ void txi_transmit (int i)
   int midx;
   if (pchip[i] == goldlen)
   {
-    cidx = floor(xind[i]/2);
+    cidx = floor (xind[i]/2);
     midx = xind[i] % 2;
     tempind = (xbit[i] != midx) == cdmacode[cdmaidx[i]][cidx];
 
@@ -401,7 +395,7 @@ void txi_transmit (int i)
     if (xind[i] == cdmalen)
     {
       xind[i] = 0;
-      xbit[i] = random(2);
+      xbit[i] = random (2);
     }
   }
   else

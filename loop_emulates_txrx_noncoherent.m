@@ -1,4 +1,4 @@
-warning('off');
+warning("off");
 subruns = 1e2;
 maxIdx = 5;
 if ~exist("debug_pd","var"), debug_pd = false; end
@@ -43,10 +43,10 @@ matname0 = strrep(matname,"_temp","_author");
 
 dothisloop = true;
 if isfile(matname) %|| isfile(matname0)
-    fprintf('Existing %s\n', matname);
+    fprintf("Existing %s\n", matname);
     dothisloop = false;
 elseif isfile(submatname)
-    fprintf('Existing %s\n', submatname);
+    fprintf("Existing %s\n", submatname);
     dothisloop = false;
 elseif isfile(subclockname)
     todo = false;
@@ -54,7 +54,7 @@ elseif isfile(subclockname)
         try
             load(subclockname);
             if endtime > datetime
-                fprintf('Someone else is working on %s ......\n', matname);
+                fprintf("Someone else is working on %s ......\n", matname);
                 todo = false;
                 break;
             else
@@ -80,14 +80,14 @@ if dothisloop
     endtime = starttime + expdur;
     remdur = endtime - datetime;
     if remdur < predur
-        fprintf('Remaining time may not finish next data.');
+        fprintf("Remaining time may not finish next data");
         return;
     end
-    save(subclockname, 'endtime');
+    save(subclockname, "endtime");
     
     %%
-    disp(datetime('now'));
-    fprintf('Working on %s ......\n', submatname);
+    disp(datetime("now"));
+    fprintf("Working on %s ......\n", submatname);
     
     tic;
     
@@ -96,8 +96,8 @@ if dothisloop
     else
         totalruns = subruns;
     end
-    disp(['working on nMo=' num2str(nMo) ', Lp=' num2str(Lp) ...
-        ', runs=' num2str(totalruns) ', subIdx=' num2str(subIdx)]);
+    disp("working on nMo="+string(nMo)+", Lp="+string(Lp) ...
+        +", runs="+string(totalruns)+", subIdx="+string(subIdx));
     
     notes_temp = nan(totalruns,nMo);
     if ~mode_pd, ber_temp = nan(totalruns,nMo,nTx); end
@@ -107,7 +107,7 @@ if dothisloop
 %     for kk = 1:totalruns
     parfor kk = 1:totalruns
         addpath("code_algo");
-        warning('off');
+        warning("off");
         
         if prod(ntxt) <= maxIdx * subruns
             note_idx = kk+(subIdx-1)*subruns-1;
@@ -125,14 +125,14 @@ if dothisloop
         notes = arrayfun(@(a)sprintf("%02d",a), note_temp);
     
         constructIn = struct(...
-            'datanote', datanote, ...
-            'T', T, ...
-            'pumpstr', pumpstr, ...
-            'Lp', Lp, ...
-            'code', code, ...
-            'notes', notes, ...
-            'T2', T2, ...
-            'Lp2', Lp2);
+            "datanote", datanote, ...
+            "T", T, ...
+            "pumpstr", pumpstr, ...
+            "Lp", Lp, ...
+            "code", code, ...
+            "notes", notes, ...
+            "T2", T2, ...
+            "Lp2", Lp2);
         try constructIn.hPre = hPre; catch, constructIn.hPre = ceil(1250/T2); end
         try constructIn.hPost = hPost; catch, constructIn.hPost = ceil(1750/T2); end
         try constructIn.hlen = hlen; catch ; end
@@ -149,7 +149,7 @@ if dothisloop
         
         rxOut = decode_mmo_noncoherent_MMoNTx(rxIn);
     
-        [~,idx] = sort(cell2mat(rxIn.txOffset),'ascend');
+        [~,idx] = sort(cell2mat(rxIn.txOffset),"ascend");
         if ~mode_pd, ber_temp(kk,:,:) = cell2mat(rxOut.BER(:,idx)); end
         if ~debug_pd
             pdoff_temp(kk,1,:) = rxOut.PDOff(idx);
@@ -166,8 +166,8 @@ if dothisloop
 
     toc;
     
-    disp(datetime('now'));
-    fprintf('Finished with %s ......\n', submatname);
+    disp(datetime("now"));
+    fprintf("Finished with %s ......\n", submatname);
     
     %%
     delete(subclockname);

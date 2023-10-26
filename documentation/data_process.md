@@ -8,29 +8,47 @@ As said, `main_emulates_txrx_allloop.m` processes the data in the way that are r
 
 | Variable  | Meaning                                                                                 | Potential value                                                                                   |
 |-----------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| datanote0 | The single-molecule channel in experiment or the multi-molecule channel to be emulated. | n-by-1 string array. Only the combinations of all fork or line channels are meaningful.           |
-| nMo       | The number of molecule in the experiment data or the emulated data.                     | Any positive integer when $datanote0$ is a single string; or equals to the length of $datanote0$. |
-| code      | The code used by the TXs.                                                               | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
-| T         | The chip interval in milliseconds.                                                      | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
-| pumpstr   | The active TX pins on TX Arduino.                                                       | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
-| Lp        | The length of the preamble as multiples of CDMA code length.                            | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
+| `datanote0` | The single-molecule channel in experiment or the multi-molecule channel to be emulated. | n-by-1 string array. Only the combinations of all fork or line channels are meaningful.           |
+| `nMo`       | The number of molecule in the experiment data or the emulated data.                     | Any positive integer when $datanote0$ is a single string; or equals to the length of $datanote0$. |
+| `code`      | The code used by the TXs.                                                               | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
+| `T`         | The chip interval in milliseconds.                                                      | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
+| `pumpstr`   | The active TX pins on TX Arduino.                                                       | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
+| `Lp`        | The length of the preamble as multiples of CDMA code length.                            | Check [dataset](/dataset) and [documentation](/documentation/testbed.md)                            |
 
-### Algorithm related variables
+### Decoder
+
+`main_emualtes_tx_allloop.m` calls two different scripts which actually process the raw data and output the results.
+
+* [`loop_emulates_txrx_noncoherent.m`](/loop_emulates_txrx_noncoherent.m) uses the [noncoherent decoder](/code_algo/decode_mmo_noncoherent_MMoNTx.m) (constant thresholder), which serves as a baseline. The only result assumes that the RX knows the arriving time of each TX.
+* [`loop_emulates_txrx_all.m`](/loop_emulates_txrx_all.m) uses the [proposed decoder](/code_algo/decode_mmo_coherent_MMoNTxSW11loop.m). All results in the paper (except one bar) are processed by this decoder.
+
+### Decoder related variables
 
 | Variable | Meaning                                                                                             | Potential value                                     |
 |----------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| cenote   | Preset adaptive filtering loss weights for channel estimation.                                      | Check [GetCEWeights()](/code_algo/GetCEWeights.m).   |
-| pdnote   | Preset adaptive filtering loss weights for packet detection.                                        | Check [GetCEWeights()](/code_algo/GetCEWeights.m).   |
-| T2       | $T/T2$ is the oversampling rate.                                                                    | No lower than the actual Arduino sampling interval. |
-| Lp2      | Conceptual preamble length, which treats some data bits as preamble.                                | No lower than $Lp$.                                 |
-| mode_pd  | Packet detection only. The decoder stops as long as all TXs are detected, whether correct or wrong. | True or false.                                      |
-| debug_pd | Debugging packet detection. It corrects false packet detection and records all metrics.             | True (only if mode_pd is true) or false.            |
-| algoPD   | Packet detection algorithm.                                                                         | "gt" for ground truth or "sc" for detection.        |
-| algoCE   | Channel estimation algorithm.                                                                       | "gt" for ground truth or "af0" for estimation.      |
+| `cenote`   | Preset adaptive filtering loss weights for channel estimation.                                      | Check [GetCEWeights()](/code_algo/GetCEWeights.m).   |
+| `pdnote`   | Preset adaptive filtering loss weights for packet detection.                                        | Check [GetCEWeights()](/code_algo/GetCEWeights.m).   |
+| `T2`       | $T/T2$ is the oversampling rate.                                                                    | No lower than the actual Arduino sampling interval. |
+| `Lp2`      | Conceptual preamble length, which treats some data bits as preamble.                                | No lower than $Lp$.                                 |
+| `algoPD`   | Packet detection algorithm.                                                                         | "gt", "gt1" or "sc".      |
+| `algoCE`   | Channel estimation algorithm.                                                                       | "gt"  (only if `algoPD` is "gt") or "af0".     |
+| `mode_pd`  | Packet detection only. The decoder stops as long as all TXs are detected, whether correct or wrong. | True (only if `algoPD` is "sc") or false.                                      |
+| `debug_pd` | Debugging packet detection. It corrects false packet detection and records all metrics.             | True (only if `algoPD` is "sc") or false.            |
+
+The `algoPD` has three options
+
+* "gt" means ground truth, which assumes the RX knows exactly when each packet arrvies. The ground truth is based on the peak of the CIR of each TX.
+* "gt1" also assumes the RX knows exactly when each packet arrvies, but with a few bits lag. This mode is meant to test the decoding performance after correct packet detection, because we observe that the packet detection is usually a few bits behind the peak of the CIR and such lag is larger at higher data rate (i.e. higher ISI).
+* "sc" performs packet detection normally.
+
+The `algoCE` has two options
+
+* "gt" mean ground truth. But this is not the real ground truth, which is estimated from the whole packet. It is only legitimate when `algoPD` is "gt".
+* "af0" performs channel estimation normally, where the CIR is estimated from the preamble only. It is legitimate with any `algoPD` option.
 
 ## Results format
 
-If you run `main_emulates_txrx_allloop.m` yourself, the results can be found in folder [`mat_temp`](/mat_temp). We also provide our processed results in folder [`mat_author`](/mat_author).
+If you run `main_emulates_txrx_allloop.m` yourself, the results can be found in folder [`mat_temp`](/mat_temp).
 
 The results are saved in the same naming manner for directories and `.mat` files.
 

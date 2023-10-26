@@ -3,7 +3,7 @@ markersize_default = 10;
 if ~exist("matversion","var"), matversion = "author"; end
 
 %%
-ceRange = [1,5,12]+300;
+ceRange = [1,12,5]+cenoteFinal-1;
 
 %%
 mol = "salt";
@@ -49,12 +49,12 @@ for ceIdx = 1:length(ceRange)
     % L3 similarity (not applicable for 1 molecule)
     % L4 smoothness
     switch mod(ceRange(ceIdx),100)
-        case 1
+        case {1,21}
             legendName(ceIdx) = "L0+L1+L2";
-        case 5
-            legendName(ceIdx) = "L0+L1";
-        case 12
+        case {5,25}
             legendName(ceIdx) = "L0+L2";
+        case {12,32}
+            legendName(ceIdx) = "L0+L1";
     end
 
     T = 125;
@@ -62,7 +62,7 @@ for ceIdx = 1:length(ceRange)
     Lp2Name = "";
     nMo = 1;
     codeName = "goldman";
-    algoName = "gt-af0";
+    algoName = "gt1-af0";
     
     for idx = 1:length(txNameRange)
         txName = txNameRange(idx);

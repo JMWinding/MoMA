@@ -7,7 +7,7 @@ try betas = cirParam.betas; catch
 end
 try T = cirParam.T; catch T = 1e-1; end
 try Tmax = cirParam.Tmax; catch Tmax = 10; end
-try mode = cirParam.mode; catch mode = 'max'; end
+try mode = cirParam.mode; catch mode = "max"; end
 
 %%
 assert(numel(betas) == nMo);
@@ -25,12 +25,12 @@ for j = 1:nMo
 end
 
 switch mode
-    case 'rand'
+    case "rand"
         idx = randi([1,10]);
-    case 'max'
+    case "max"
         [~, idx] = max(cirs{1}); idx = mod(idx-1,10)+1;
     otherwise
-        error('wrong sim_mc_cir mode');
+        error("wrong sim_mc_cir mode");
 end
 istart = inf;
 for j = 1:nMo
@@ -38,7 +38,7 @@ for j = 1:nMo
     istart = min(istart, find(cirs{j}>1e-3,1));
 end
 for j = 1:nMo
-    iend = find(cirs{j}>1e-3,1,'last');
+    iend = find(cirs{j}>1e-3,1,"last");
     cirs{j}(1:istart-1) = [];
     cirs{j}(iend+1:end) = [];
 end

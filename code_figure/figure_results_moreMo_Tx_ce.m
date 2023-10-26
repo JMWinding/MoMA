@@ -11,7 +11,7 @@ LpName = "16";
 Lp2Name = "";
 osName = "";
 codeName = "goldman"; codelength = 14;
-algoName = "gt-af0";
+algoName = "gt1-af0";
 algover = "11";
 topo = "line";
 

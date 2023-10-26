@@ -15,11 +15,11 @@ figure_results_missing
 % figure 10 (include reference index)
 figure_results_codecomplement
 % figure 11
-figure_results_ceLoss_nTx_ce % DIFFERENT
+figure_results_ceLoss_nTx_ce %
 % figure 12a,12b
-figure_results_moreMo_Tx_ce % DIFFERENT
+figure_results_moreMo_Tx_ce %
 % figure 13
-figure_results_codetuple % DIFFERENT
+figure_results_codetuple %
 % figure 14
 figure_results_moreMo_rate_pd
 % figure 15

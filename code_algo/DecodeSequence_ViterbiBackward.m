@@ -8,7 +8,7 @@ try
     dBit = params.dBit;
     lags = params.lags;
 catch
-    error('decoding missing variables');
+    error("decoding missing variables");
 end
 
 %%

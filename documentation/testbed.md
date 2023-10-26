@@ -34,7 +34,7 @@ The RX Arduino setting is much more easier, which only requires connecting the [
 
 ### Synchronizing TX and RX
 
-The TX Arduino and the RX Arduino are synchronized by two pins. The TX sends a HIGH voltage to the RX through the SYNC pin (pin 9) when a new trace starts. Then, the RX replies a HIGH votalge to the TX through the ACK pin (pin 8).
+The TX Arduino and the RX Arduino are synchronized through "Serial1", which requires connection of TX Arduino Pin18 to RX Arduino Pin19, and TX Arduino Pin19 to RX Arduino Pin18.
 
 ## Coding
 
@@ -112,7 +112,7 @@ The experiment is conducted as the following steps.
 
 ### TX data
 
-Take [this](/dataset/data5/125ms_2-3-4-5_16_goldman/tx/00.TXT) as an example of TX data.
+Take [/dataset/data5/125ms_2-3-4-5_16_goldman/tx/00.TXT](/dataset/data5/125ms_2-3-4-5_16_goldman/tx/00.TXT) as an example of TX data.
 
 #### Experiment setup
 
@@ -122,10 +122,10 @@ The first line shows the basic setup of the experiments.
 125 100 4 7 16
 ```
 
-* `125` is the chip interval in milliseconds.
+* `125` is the chip interval in milliseconds. But coding `plain0` is an exception, where the chip interval is double the value (e.g. `875ms_2_2_plain0` has 1.75s symbol interval).
 * `100` is the number of data bits in each packet.
 * `4` is the number of active TX.
-* `7` is the length of the gold code. It is either used directly as CDMA or to generate the MoMA codebook, depending on the coding scheme explained [here](#coding).
+* `7` is the length of the gold code. It is either used directly as CDMA or to generate the MoMA codebook, depending on the coding scheme explained [in this part](#coding).
 * `16` is the length of the preamble as multiples of the code length.
 
 #### Transmitter setup
@@ -163,7 +163,7 @@ The rest of the file after the line `START` records the behavior of each TX, and
 
 ### RX data
 
-Take [this](/dataset/data5/125ms_2-3-4-5_16_goldman/rx/00.TXT) as an example of RX data.
+Take [/dataset/data5/125ms_2-3-4-5_16_goldman/rx/00.TXT](/dataset/data5/125ms_2-3-4-5_16_goldman/rx/00.TXT) as an example of RX data.
 
 ```
 24087	21
@@ -237,7 +237,7 @@ Take `125ms_2-3-4-5_16_goldman` as an example.
 | T        | 125     | Chip interval in milliseconds.                           |
 | pumpstr  | 2-3-4-5 | Indices of active pumps (TXs) separated by '-'.          |
 | Lp       | 16      | Length of preamble as multiples of code length.          |
-| code     | goldman | Coding type. More details are explained [here](#coding). |
+| code     | goldman | Coding type. More details are explained [in this part](#coding). |
 
 ### Fourth layer
 

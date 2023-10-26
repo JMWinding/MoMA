@@ -1,16 +1,16 @@
 function rval = EstimateChannelMMoSW(params)
 
 %% model parameters
-try noisemodel = params.noisemodel; catch, noisemodel = 'pois'; end
+try noisemodel = params.noisemodel; catch, noisemodel = "pois"; end
 
 %% inputs
-try yr = params.yr; catch, error('channel estimation missing variables'); end
-try xChip = params.xChip; catch, error('channel estimation missing variables'); end
-try dBit = params.dBit; catch, error('channel estimation missing variables'); end
-try pChip = params.pChip; catch, error('channel estimation missing variables'); end
-try lags_ce = params.lags_ce; catch, error('channel estimation missing variables'); end
-try algo = params.algo; catch, algo = 'af'; end
-try code = params.code; catch, code = 'goldman'; end
+try yr = params.yr; catch, error("channel estimation missing variables"); end
+try xChip = params.xChip; catch, error("channel estimation missing variables"); end
+try dBit = params.dBit; catch, error("channel estimation missing variables"); end
+try pChip = params.pChip; catch, error("channel estimation missing variables"); end
+try lags_ce = params.lags_ce; catch, error("channel estimation missing variables"); end
+try algo = params.algo; catch, algo = "af"; end
+try code = params.code; catch, code = "goldman"; end
 
 %%
 nMo = size(xChip,1);
@@ -30,7 +30,7 @@ try moOffset = params.moOffset; catch
     if nMo == 1
         moOffset = num2cell(zeros(1,nTx));
     else
-        error('channel estimation missing fields');
+        error("channel estimation missing fields");
     end
 end
 
@@ -95,7 +95,7 @@ end
 %% estimate channel
 idx_ce = find(~isinf(lags_ce));
 switch algo
-    case {'ls'}
+    case {"ls"}
         if nbest
             for j = 1:nMo
                 hpTemp = [cell2mat(Xp(j,idx_ce)), ones(lens_ce(j),1)] \ (yp{j} - yo{j});
@@ -112,13 +112,13 @@ switch algo
                 end
             end
         end
-    case {'af'}
+    case {"af"}
         % initialization
         for j = 1:nMo
             for i = 1:nTx
                 if isinf(lags_ce(i)), continue; end
                 if length(hp{j,i}) == hTotal, continue; end
-                error('hp should have been initialized');
+                error("hp should have been initialized");
             end
         end
         firstRun = true;
@@ -130,13 +130,13 @@ switch algo
         threshold = 1e-4;        
         hps2 = hp; bps2 = nb;
         
-        afIn = struct('afloss', afloss, 'nbest', nbest, ...
-            'yps', {yp}, 'yos', {yo}, 'Xps', {Xp}, ...
-            'hps', {hp}, 'bps', {nb}, ...
-            'weight_pos', weight_pos, 'weight_posy', weight_posy, ...
-            'weight_simTx', weight_simTx, 'weight_simMo', weight_simMo, ...
-            'weight_smth', weight_smth, 'weight_cntr', weight_cntr, ...
-            'lags', lags_ce, 'noisemodel', noisemodel, 'sameMo', sameMo);
+        afIn = struct("afloss", afloss, "nbest", nbest, ...
+            "yps", {yp}, "yos", {yo}, "Xps", {Xp}, ...
+            "hps", {hp}, "bps", {nb}, ...
+            "weight_pos", weight_pos, "weight_posy", weight_posy, ...
+            "weight_simTx", weight_simTx, "weight_simMo", weight_simMo, ...
+            "weight_smth", weight_smth, "weight_cntr", weight_cntr, ...
+            "lags", lags_ce, "noisemodel", noisemodel, "sameMo", sameMo);
         rvalaf = get_stats_af(afIn);
         while 1            
             % update
@@ -153,13 +153,13 @@ switch algo
             end
             
             % which one is better?
-            afIn2 = struct('afloss', afloss, 'nbest', nbest, ...
-                'yps', {yp}, 'yos', {yo}, 'Xps', {Xp}, ...
-                'hps', {hps2}, 'bps', {bps2}, ...
-                'weight_pos', weight_pos, 'weight_posy', weight_posy, ...
-                'weight_simTx', weight_simTx, 'weight_simMo', weight_simMo, ...
-                'weight_smth', weight_smth, 'weight_cntr', weight_cntr, ...
-                'lags', lags_ce, 'noisemodel', noisemodel, 'sameMo', sameMo);
+            afIn2 = struct("afloss", afloss, "nbest", nbest, ...
+                "yps", {yp}, "yos", {yo}, "Xps", {Xp}, ...
+                "hps", {hps2}, "bps", {bps2}, ...
+                "weight_pos", weight_pos, "weight_posy", weight_posy, ...
+                "weight_simTx", weight_simTx, "weight_simMo", weight_simMo, ...
+                "weight_smth", weight_smth, "weight_cntr", weight_cntr, ...
+                "lags", lags_ce, "noisemodel", noisemodel, "sameMo", sameMo);
             rvalaf2 = get_stats_af(afIn2);
             if rvalaf2.loss > rvalaf.loss
                 stepsize = stepsize / 2;
@@ -168,21 +168,21 @@ switch algo
             
             % time to stop?
             if time_to_stop( ...
-                    struct('hps', {hp}, 'bps', {nb}), ...
-                    struct('hps', {hps2}, 'bps', {bps2}), ...
+                    struct("hps", {hp}, "bps", {nb}), ...
+                    struct("hps", {hps2}, "bps", {bps2}), ...
                     threshold)
                 if firstRun
                     firstRun = false;
                     stepsize = stepsize0;
 
                     nb(:) = {0};
-                    afIn = struct('afloss', afloss, 'nbest', nbest, ...
-                        'yps', {yp}, 'yos', {yo}, 'Xps', {Xp}, ...
-                        'hps', {hp}, 'bps', {nb}, ...
-                        'weight_pos', weight_pos, 'weight_posy', weight_posy, ...
-                        'weight_simTx', weight_simTx, 'weight_simMo', weight_simMo, ...
-                        'weight_smth', weight_smth, 'weight_cntr', weight_cntr, ...
-                        'lags', lags_ce, 'noisemodel', noisemodel, 'sameMo', sameMo);
+                    afIn = struct("afloss", afloss, "nbest", nbest, ...
+                        "yps", {yp}, "yos", {yo}, "Xps", {Xp}, ...
+                        "hps", {hp}, "bps", {nb}, ...
+                        "weight_pos", weight_pos, "weight_posy", weight_posy, ...
+                        "weight_simTx", weight_simTx, "weight_simMo", weight_simMo, ...
+                        "weight_smth", weight_smth, "weight_cntr", weight_cntr, ...
+                        "lags", lags_ce, "noisemodel", noisemodel, "sameMo", sameMo);
                     rvalaf = get_stats_af(afIn);
                     continue;
                 else
@@ -196,7 +196,7 @@ switch algo
             rvalaf = rvalaf2;
         end
     otherwise
-        error('channel estimation algorithm not supported');
+        error("channel estimation algorithm not supported");
 end
 
 %% post process
@@ -218,13 +218,13 @@ for j = 1:nMo
     end
     idx = yh > max(yh) * 0.1;
     switch noisemodel
-        case 'norm'
+        case "norm"
             nn{j} = std(yh-yp{j});
             np{j} = 0;
-        case {'pois', 'pois0'}
+        case {"pois", "pois0"}
             nn{j} = 0;
             np{j} = std((yh(idx)-yp{j}(idx))./sqrt(yh(idx)));
-        case 'mix'
+        case "mix"
             matA = [1, mean(yh(idx)); mean(1./yh(idx)), 1];
             vecb = [sum((yh(idx)-yp{j}(idx)).^2); ...
                 sum((yh(idx)-yp{j}(idx)).^2./yh(idx))];
@@ -339,10 +339,10 @@ end
 for j = 1:nMo
     % LS term
     switch noisemodel
-        case {'norm', 'pois'}
+        case {"norm", "pois"}
             loss = loss + mean(ypsErr{j}.^2) ...
                 + weight_posy * mean(relu(ypsErr{j}).^2);
-        case 'pois0'
+        case "pois0"
             loss = loss + mean(ypsErr{j}(idxs{j}).^2 ./ yhs{j}(idxs{j})) ...
                 + weight_posy * mean(relu(ypsErr{j}(idxs{j})).^2 ./ yhs{j}(idxs{j}));
     end
@@ -384,10 +384,10 @@ for j = 1:nMo
     %% background
     % LS term
     switch noisemodel
-        case {'norm', 'pois'}
+        case {"norm", "pois"}
             grad_b{j} = grad_b{j} + (mean(ypsErr{j})) ...
                 + weight_posy * (mean(relu(ypsErr{j})));
-        case 'pois0'
+        case "pois0"
             e2yh = ypsErr{j}(idxs{j}) ./ yhs{j}(idxs{j});
             grad_b{j} = grad_b{j} + (mean(e2yh.*(e2yh+2))) ...
                 + weight_posy * (mean(relu(e2yh).*(e2yh+2)));
@@ -400,14 +400,14 @@ for j = 1:nMo
         if isinf(lags(i)), continue; end
         % LS term
         switch noisemodel
-            case {'norm', 'pois'}
-                grad_h{j,i} = grad_h{j,i} + (Xps{j,i}' * ypsErr{j} / hTotal) ...
-                    + weight_posy * (Xps{j,i}' * relu(ypsErr{j}) / hTotal);
-            case 'pois0'
+            case {"norm", "pois"}
+                grad_h{j,i} = grad_h{j,i} + (Xps{j,i}.' * ypsErr{j} / hTotal) ...
+                    + weight_posy * (Xps{j,i}.' * relu(ypsErr{j}) / hTotal);
+            case "pois0"
                 e2yh = ypsErr{j}(idxs{j}) ./ yhs{j}(idxs{j});
                 grad_h{j,i} = grad_h{j,i} + ...
-                    (Xps{j,i}(idxs{j},:)' * (e2yh.*(e2yh+2)) / hTotal) ...
-                    + weight_posy * (Xps{j,i}(idxs{j},:)' * (relu(e2yh).*(e2yh+2)) / hTotal);
+                    (Xps{j,i}(idxs{j},:).' * (e2yh.*(e2yh+2)) / hTotal) ...
+                    + weight_posy * (Xps{j,i}(idxs{j},:).' * (relu(e2yh).*(e2yh+2)) / hTotal);
         end
         % non-negative term
         grad_h{j,i} = grad_h{j,i} + (-weight_pos * relu(-hps{j,i}) / hTotal);
@@ -511,10 +511,10 @@ end
 for j = 1:nMo
     % LS term
     switch noisemodel
-        case {'norm', 'pois'}
+        case {"norm", "pois"}
             loss = loss + sum(ypsErr{j}.^2) ...
                 + weight_posy * sum(relu(ypsErr{j}).^2);
-        case 'pois0'
+        case "pois0"
             loss = loss + sum(ypsErr{j}(idxs{j}).^2 ./ yhs{j}(idxs{j})) ...
                 + weight_posy * sum(relu(ypsErr{j}(idxs{j})).^2 ./ yhs{j}(idxs{j}));
     end
@@ -556,10 +556,10 @@ for j = 1:nMo
     %% background
     % LS term
     switch noisemodel
-        case {'norm', 'pois'}
+        case {"norm", "pois"}
             grad_b{j} = grad_b{j} + (sum(ypsErr{j})) ...
                 + weight_posy * (sum(relu(ypsErr{j})));
-        case 'pois0'
+        case "pois0"
             e2yh = ypsErr{j}(idxs{j}) ./ yhs{j}(idxs{j});
             grad_b{j} = grad_b{j} + (sum(e2yh.*(e2yh+2))) ...
                 + weight_posy * (sum(relu(e2yh).*(e2yh+2)));
@@ -572,14 +572,14 @@ for j = 1:nMo
         if isinf(lags(i)), continue; end
         % LS term
         switch noisemodel
-            case {'norm', 'pois'}
-                grad_h{j,i} = grad_h{j,i} + (Xps{j,i}' * ypsErr{j}) ...
-                    + weight_posy * (Xps{j,i}' * relu(ypsErr{j}));
-            case 'pois0'
+            case {"norm", "pois"}
+                grad_h{j,i} = grad_h{j,i} + (Xps{j,i}.' * ypsErr{j}) ...
+                    + weight_posy * (Xps{j,i}.' * relu(ypsErr{j}));
+            case "pois0"
                 e2yh = ypsErr{j}(idxs{j}) ./ yhs{j}(idxs{j});
                 grad_h{j,i} = grad_h{j,i} + ...
-                    (Xps{j,i}(idxs{j},:)' * (e2yh.*(e2yh+2))) ...
-                    + weight_posy * (Xps{j,i}(idxs{j},:)' * (relu(e2yh).*(e2yh+2)));
+                    (Xps{j,i}(idxs{j},:).' * (e2yh.*(e2yh+2))) ...
+                    + weight_posy * (Xps{j,i}(idxs{j},:).' * (relu(e2yh).*(e2yh+2)));
         end
         % non-negative term
         grad_h{j,i} = grad_h{j,i} + (-weight_pos * relu(-hps{j,i}));

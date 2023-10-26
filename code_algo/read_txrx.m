@@ -1,4 +1,4 @@
-function [tx, rx] = readtxrx(folder, note, code)
+function [tx, rx] = read_txrx(folder, note, code)
 %% read tx
 if contains(code, "goldman") || contains(code, "plain")
     settingFile = folder+"/../goldman.txt";
@@ -27,9 +27,9 @@ else
 end
 
 %% CDMA code
-codeId = fopen(settingFile, 'r');
+codeId = fopen(settingFile, "r");
 l = fgetl(codeId);
-A = sscanf(l, '%f %f');
+A = sscanf(l, "%f %f");
 nCode = A(1);
 nChip = A(2);
 codes = zeros(nChip,nCode);
@@ -41,7 +41,7 @@ end
 fclose(codeId);
 
 %% tx
-txId = fopen(txFile, 'r');
+txId = fopen(txFile, "r");
 if txId == -1
     disp(txFile);
 end
@@ -49,10 +49,10 @@ end
 % first line
 l = fgetl(txId);
 try
-    A = sscanf(l, '%f %f %f %f %f');
+    A = sscanf(l, "%f %f %f %f %f");
     Lp = A(5);
 catch
-    A = sscanf(l, '%f %f %f %f');
+    A = sscanf(l, "%f %f %f %f");
     Lp = 4;
 end
 T = A(1) * 1e-3;
@@ -72,7 +72,7 @@ txOffset = zeros(1,nTx);
 moOffset = zeros(1,nTx);
 for i = 1:nTx
     l = fgetl(txId);
-    A = sscanf(l, '(%f, %f, %f, %f), (code %f)');
+    A = sscanf(l, "(%f, %f, %f, %f), (code %f)");
     txPumps(i,:) = A(1:4).';
     txPumps(i,2) = A(2) * T;
     txOffset(1,i) = A(2);
@@ -88,7 +88,7 @@ end
 fclose(txId);
 
 % tx bits
-txId = fopen(txFile, 'r');
+txId = fopen(txFile, "r");
 txBits = zeros(nBit,nTx);
 nBits = ones(1,nTx);
 txChips = zeros((nBit+Lp)*nChip*2,nTx);
@@ -96,7 +96,7 @@ nChips = ones(1,nTx);
 
 while true
     l = fgetl(txId);
-    if contains(l,'START')
+    if contains(l,"START")
         break;
     end
 end
@@ -107,17 +107,17 @@ while true
     if l == -1
         break;
     end
-    if contains(l,'bit')
-        A = sscanf(l, '%f, %f, bit %f');
+    if contains(l,"bit")
+        A = sscanf(l, "%f, %f, bit %f");
         txBits(nBits(A(2)+1),A(2)+1) = A(3);
         nBits(A(2)+1) = nBits(A(2)+1) + 1;
-    elseif contains(l,'prem')
-        A = sscanf(l, '%f, %f, prem %f');
+    elseif contains(l,"prem")
+        A = sscanf(l, "%f, %f, prem %f");
         if nBits(A(2)+1) == 1
             startTime(A(2)+1) = A(1);
         end
     else
-        A = sscanf(l, '%f, %f, %f');
+        A = sscanf(l, "%f, %f, %f");
         txChips(nChips(A(2)+1),A(2)+1) = A(3);
         nChips(A(2)+1) = nChips(A(2)+1) + 1;
     end
@@ -140,8 +140,8 @@ end
 function rxSignal = readrx(rxFile)
 res = 1e-3;
 
-rxId = fopen(rxFile, 'r');
-A = textscan(rxId, '%f\t%f');
+rxId = fopen(rxFile, "r");
+A = textscan(rxId, "%f\t%f");
 fclose(rxId);
 
 A = cell2mat(A);

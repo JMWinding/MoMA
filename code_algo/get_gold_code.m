@@ -5,12 +5,12 @@ if nTx == 0
     nTx = nMax;
 end
 if nTx > nMax
-    error('Please select higher order polynomials');
+    error("Please select higher order polynomials");
 end
 
 %%
 switch degree
-    % primpoly(8,'all');
+    % primpoly(8,"all");
     case 3
         polynomial1 = "x^3+x^2+1";
         polynomial2 = "x^3+x+1";
@@ -36,7 +36,7 @@ switch degree
         polynomial1 = "x^11+x^2+1";
         polynomial2 = "x^11+x^8+x^5+x^2+1";
     otherwise
-        error('not supported degree');
+        error("not supported degree");
 end
 
 nChip = 2^degree-1;
@@ -66,7 +66,7 @@ for i = 1:nSeq
     end
 end
 
-assert(sum(isnan(rChip), 'all') == 0);
+assert(sum(isnan(rChip), "all") == 0);
 
 end
 

@@ -10,7 +10,7 @@ try
     hPres = params.hPres;
     chan = params.chan;
 catch
-    error('decoding missing variables');
+    error("decoding missing variables");
 end
 
 %%
@@ -22,9 +22,9 @@ nBit = length(xBit{1});
 try lags_new = params.lags_new; catch, lags_new = inf(1,nTx); end
 try cpIdx = params.cpIdx; catch, cpIdx = 0; end
 try endIdx = params.endIdx; catch, endIdx = length(yd{1}); end
-try mode = params.mode; catch, mode = 'de'; end
+try mode = params.mode; catch, mode = "dc"; end
 
-try code = params.code; catch, code = 'goldman'; end
+try code = params.code; catch, code = "goldman"; end
 for j = 1:nMo
     for i = 1:nTx
         xChip{j,i} = GenerateCodeChips(xChip{j,i},code);
@@ -174,14 +174,14 @@ for jy = 1:endIdx
                 end
             end
         end
-        clear('VStatesTemp2');
+        clear("VStatesTemp2");
 
         % delete inf
         ind = isinf(cell2mat(VStatesTemp(:,end)));
         VStatesTemp(ind,:) = [];
         VTraces{j,jy+1}(ind,:) = [];
         if size(VStatesTemp,1) == 0
-            error('viterbi reaches all states with zero probability');
+            error("viterbi reaches all states with zero probability");
         end
 
         % probability of current state
@@ -215,12 +215,12 @@ for jy = 1:endIdx
             end
 
             switch mode
-                case 'pd'
+                case "pd"
                     ViterbiLogProbCurrent(k) = -abs(yd{j}(jy) - yh);
-                case 'ce'
+                case "ce"
                     ViterbiLogProbCurrent(k) =  ComputeViterbiLogProb(yd{j}(jy), yh, ...
                           10*chan.nn{j}, 10*chan.np{j});
-                case 'de'
+                case "dc"
                     ViterbiLogProbCurrent(k) = ComputeViterbiLogProb(yd{j}(jy), yh, ...
                           chan.nn{j}, chan.np{j});
             end
@@ -240,7 +240,7 @@ for jy = 1:endIdx
         end
 
         % sort and truncate lower probability
-        [~, ind] = sort(cell2mat(VStatesTemp(:,end)), 'descend');
+        [~, ind] = sort(cell2mat(VStatesTemp(:,end)), "descend");
         if length(ind) > nTracks
             ind(nTracks+1:end) = [];
         end
@@ -253,19 +253,19 @@ for jy = 1:endIdx
     %% values for next window (only once)
     if jy == cpIdx
         checkpoint = struct( ...
-            'tracedBits', {tracedBits}, ...
-            'VTraceLast', {VTraces(:,jy+1)}, ...
-            'VStateLast', {VStates});
+            "tracedBits", {tracedBits}, ...
+            "VTraceLast", {VTraces(:,jy+1)}, ...
+            "VStateLast", {VStates});
     end
 end
 
 %%
-if exist('checkpoint', 'var')
+if exist("checkpoint", "var")
     rval.checkpoint = checkpoint;
 end
 rval.viterbi = struct( ...
-    'tracedBits', {tracedBits}, ...
-    'VStates', {VStates}, ...
-    'VTraces', {VTraces});
+    "tracedBits", {tracedBits}, ...
+    "VStates", {VStates}, ...
+    "VTraces", {VTraces});
 
 end

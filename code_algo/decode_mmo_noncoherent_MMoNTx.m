@@ -14,17 +14,17 @@ try
     pChip = params.pChip;
     txOffset = params.txOffset;
 catch
-    error('missing fields');
+    error("missing fields");
 end
 
 try isrepeat = params.isrepeat; catch, isrepeat = false; end
-try noisemodel = params.noisemodel; catch, noisemodel = 'pois'; end
-try algoPD = params.algoPD; catch, algoPD = 'sc'; end
-try algoCE = params.algoCE; catch, algoCE = 'ls'; end
+try noisemodel = params.noisemodel; catch, noisemodel = "pois"; end
+try algoPD = params.algoPD; catch, algoPD = "sc"; end
+try algoCE = params.algoCE; catch, algoCE = "ls"; end
 try nTracks = params.nTracks; catch, nTracks = 2^8; end
 try sync = params.sync; catch, sync = -1; end
-try mode = params.mode; catch, mode = 'dc'; end
-try code = params.code; catch, code = 'goldman'; end
+try mode = params.mode; catch, mode = "dc"; end
+try code = params.code; catch, code = "goldman"; end
 
 %% related variables
 nMo = size(xChip,1);
@@ -36,10 +36,10 @@ try moOffset = params.moOffset; catch
     if nMo == 1
         moOffset = num2cell(zeros(1,nTx));
     else
-        error('missing fields');
+        error("missing fields");
     end
 end
-moOffsetMax = max(cell2mat(moOffset),[],'all');
+moOffsetMax = max(cell2mat(moOffset),[],"all");
 
 debug_pd = debug_pd & ~isequal(algoPD,"gt");
 
@@ -78,14 +78,14 @@ catch
 %     hPre = ceil(0.6/T); hPost = ceil(1.2/T);
     hPre = 7; hPost = 10;
 end
-chan = struct('hp', {cell(nMo,nTx)}, ...
-    'hpre', {cell(nMo,nTx)}, ...
-    'nb', {cell(nMo,1)}, ...
-    'nn', {cell(nMo,1)}, ...
-    'np', {cell(nMo,1)});
+chan = struct("hp", {cell(nMo,nTx)}, ...
+    "hpre", {cell(nMo,nTx)}, ...
+    "nb", {cell(nMo,1)}, ...
+    "nn", {cell(nMo,1)}, ...
+    "np", {cell(nMo,1)});
 chan.hpre(:) = {-1};
 switch algoCE
-    case 'gt'
+    case "gt"
         for i = 1:nTx
             chan.hp(:,i) = xChannel.xCIR(:,i);
             chan.hpre(:,i) = {pkOffset(i)};
@@ -93,7 +93,7 @@ switch algoCE
         chan.nb = xChannel.noiseb;
         chan.nn = xChannel.noisen;
         chan.np = xChannel.noisep;
-    case 'af0'
+    case "af0"
         % "0" assumes known CIR estimation (possibly from previos packet)
         for i = 1:nTx
             for j = 1:nMo
@@ -111,7 +111,7 @@ switch algoCE
         chan.nn = xChannel.noisen;
         chan.np = xChannel.noisep;
         % remove "0" to perform normal channel estimation
-        algoCE = 'af';
+        algoCE = "af";
 end
 chan_gt = chan;
 % decoding variables
@@ -160,9 +160,9 @@ rxOut.BER = BER;
 
 if debug_pd
     rxOut.debug_pd = struct( ...
-        'labels_pd', labels_pd, ...
-        'errors_pd', errors_pd, ...
-        'metrics_pd', metrics_pd);
+        "labels_pd", labels_pd, ...
+        "errors_pd", errors_pd, ...
+        "metrics_pd", metrics_pd);
 end
 
 end

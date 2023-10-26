@@ -2,8 +2,8 @@
 % expdur = hours(24);
 starttime = datetime;
 predur = hours(0);
-if isempty(gcp('nocreate'))
-    parpool(feature('numcores'));
+if isempty(gcp("nocreate"))
+    parpool(feature("numcores"));
 end
 addpath("code_algo");
 
@@ -90,6 +90,30 @@ if (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldm
     debug_pd = false;
     mode_pd = false;
     algoPD = "gt";
+    algoCE = "af0";
+    loop_emulates_txrx_all
+end
+
+%
+if (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,"1") && code=="goldman" ...
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 6 debug
+   || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="gold" ...
+        && ismember(pumpstr,["2","2-3"]) && T==125 && Lp==16) ... % figure 6 debug
+   || (ismember(cenote,cenote0) && nMo==1 && isequal(datanote0,"1") && code=="plain0" ...
+        && pumpstr=="2" && T==437 && Lp==2) ... % figure 6 debug
+   || (ismember(mod(cenote,cenoteOffset),[1,5,12]) && nMo==1 && isequal(datanote0,"1") ...
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 11
+   || (ismember(cenote,cenote0) && ismember(nMo,[1,2]) && (numel(datanote0)==1&&ismember(datanote0,["1","3","4","5"])) && code=="goldman" ...
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 12
+   || (ismember(cenote,cenote0) && nMo==2 && (numel(datanote0)==2&&ismember(datanote0.',[["1";"3"],["4";"5"]].',"rows")) && code=="goldman" ...
+        && ismember(pumpstr,["2","3-4","2-3-4","2-3-4-5"]) && T==125 && Lp==16) ... % figure 12
+   || (ismember(cenote,cenote0) && nMo==1 && (numel(datanote0)==1&&ismember(datanote0,["1","2"])) && code=="goldman" ...
+        && pumpstr=="2-7" && T==125 && Lp==16) ... % figure 13
+   || (ismember(cenote,cenote0) && nMo==2 && isequal(datanote0,["1";"2"]) && code=="goldman" ...
+        && pumpstr=="2-7" && T==125 && Lp==16) % figure 13
+    debug_pd = false;
+    mode_pd = false;
+    algoPD = "gt1";
     algoCE = "af0";
     loop_emulates_txrx_all
 end

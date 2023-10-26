@@ -9,13 +9,13 @@ try
     Lp = params.Lp;
     dBit = params.dBit;
 catch
-    error('preamble detection missing inputs');
+    error("preamble detection missing inputs");
 end
 
 try isrepeat = params.isrepeat; catch, isrepeat = false; end
-try algo = params.algo; catch, algo = 'sc'; end
-try algoCE = params.algoCE; catch, algoCE = 'gt'; end
-try code = params.code; catch, code = 'goldman'; end
+try algo = params.algo; catch, algo = "sc"; end
+try algoCE = params.algoCE; catch, algoCE = "gt"; end
+try code = params.code; catch, code = "goldman"; end
 
 %% related variables
 nMo = size(xChip,1);
@@ -27,7 +27,7 @@ try moOffset = params.moOffset; catch
     if nMo == 1
         moOffset = num2cell(zeros(1,nTx));
     else
-        error('missing fields');
+        error("missing fields");
     end
 end
 assert(sum(sum(cell2mat(moOffset)==0)<1)==0);
@@ -120,7 +120,7 @@ if mlen > plen && sum(isinf(lags)) > 0
     %% search for potential packets
     lags_detected = inf(1,nTx);
     switch algo
-        case 'gt'
+        case "gt"
             for i = 1:nTx
                 if isinf(lags_gt(i)), continue; end
 
@@ -129,7 +129,7 @@ if mlen > plen && sum(isinf(lags)) > 0
                 end
             end
 
-        case 'sc'
+        case "sc"
             pksTemp = -inf(1,nTx);
             lagsTemp = inf(1,nTx);
             for i = 1:nTx
@@ -139,7 +139,7 @@ if mlen > plen && sum(isinf(lags)) > 0
 
                 lagMin = max(lags_min(i),plen);
                 lagMax = min(lags_max(i),2*plen-1);
-                [pkTemp, lagTemp] = max(metric_final(lagMin+1:lagMax+1,i),[],'omitnan');
+                [pkTemp, lagTemp] = max(metric_final(lagMin+1:lagMax+1,i),[],"omitnan");
                 lagTemp = lagTemp + lagMin;
 
                 if pkTemp < max(metric_final(lagTemp+1:min(lagTemp+2*Lp*2,size(metric_final,1)),i))
@@ -150,7 +150,7 @@ if mlen > plen && sum(isinf(lags)) > 0
                 lagsTemp(i) = lagTemp;
             end
 
-            [~, maxInd] = sort(pksTemp,'descend');
+            [~, maxInd] = sort(pksTemp,"descend");
             for i = 1:nTx
                 if isinf(pksTemp(maxInd(i))), continue; end
                 ind = find(lagsTemp>lagsTemp(maxInd(i))-plen ...
@@ -168,20 +168,20 @@ if mlen > plen && sum(isinf(lags)) > 0
             || sum(~isinf(lags_gt)) > 0 ...
           ) && false
         if isempty(groot().Children)
-            figure('units','normalized','outerposition',[0 0 1 1]);
+            figure("units","normalized","outerposition",[0 0 1 1]);
         end
-        tiledlayout(3,1,'TileSpacing','compact');
+        tiledlayout(3,1,"TileSpacing","compact");
         nexttile;
-        plot(pcorrTx); title('corr'); box on; grid on;
+        plot(pcorrTx); title("corr"); box on; grid on;
         xticks(0:plen/2:mlen); xlim([0,mlen]);
         nexttile;
-        plot(pcorr2Tx); title('corr2'); box on; grid on;
+        plot(pcorr2Tx); title("corr2"); box on; grid on;
         xticks(0:plen/2:mlen); xlim([0,mlen]);
         nexttile;
-        plot(metric); title('metric'); box on; grid on;
+        plot(metric); title("metric"); box on; grid on;
         xticks(0:plen/2:mlen); xlim([0,mlen]);
         lg = legend(cellstr(num2str([lags; lags_detected; lags_gt].')));
-        lg.Layout.Tile = 'east';
+        lg.Layout.Tile = "east";
 
         %%
 %         lags_detected = lags_new;
@@ -190,7 +190,7 @@ if mlen > plen && sum(isinf(lags)) > 0
     
     %% compute related values
     lags(~isinf(lags_detected)) = lags_detected(~isinf(lags_detected));
-    if sum(~isinf(lags_detected)) > 0 && ~isequal(algoCE, 'gt')
+    if sum(~isinf(lags_detected)) > 0 && ~isequal(algoCE, "gt")
         for j = 1:nMo
             temp = mean(cell2mat(hp(j,:)),2);
             for i = 1:nTx

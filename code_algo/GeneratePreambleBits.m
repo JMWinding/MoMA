@@ -1,7 +1,7 @@
 function mseq = GeneratePreambleBits(len)
 %%
 p = nextpow2(len/2+1);
-pr = primpoly(p, 'nodisplay');
+pr = primpoly(p, "nodisplay");
 fbconnection = de2bi(pr);
 
 n = length(fbconnection);

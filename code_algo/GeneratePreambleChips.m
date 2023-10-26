@@ -3,7 +3,7 @@ function rval = GeneratePreambleChips(xchip, Lp)
 if size(xchip,1) == 1
     xchip = xchip.';
 elseif size(xchip,2) ~= 1
-    error('input is not a vector');
+    error("input is not a vector");
 end
 
 %% 

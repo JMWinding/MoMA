@@ -1,15 +1,5 @@
 function weights = GetCEWeights(note)
-if note >= 100 && note < 199
-    % backup1, mean
-    % 1.25s hPre and 1.75s hPost
-elseif note >= 200 && note < 299
-    % backup1, sum
-    % 1.25s hPre and 1.75s hPost
-elseif note >= 300 && note < 399
-    % backup2, mean
-    % 1.25s hPre and 1.75s hPost
-elseif note >= 400 && note < 499
-    % backup2, sum
+if note >= 100 && note < 499
     % 1.25s hPre and 1.75s hPost
 end
     

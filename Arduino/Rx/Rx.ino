@@ -10,34 +10,32 @@ const int Ts = 5; //Gap between sampling in ms
 //********************************************
 
 //*****************Setup Connections**********
-const int sync = 9;
-const int ack  = 8; //acknowledge to tx that rx is ready
-const int chipSelect = 10;
+int record = LOW;
+const int chipSelect = 53;
 const byte ECsensorPin = A1;  // EC Meter analog output,pin on analog 1
 //********************************************
 
 //*******************Variables****************
 File myFile;
 
-int fileIndex = 15;
+int fileIndex = 6;
 char fileName[50];
 int activated = 0;
 
 unsigned int AnalogReading;
 unsigned long AnalogSampleTime;
+
 //*********************************************
 void rx_receive (void);
 Ticker timerRx (rx_receive, Ts, 0, MILLIS);
 
-void setup()
-{
-  pinMode (sync, INPUT);
-  pinMode (ack, OUTPUT);
-  digitalWrite (ack,LOW);
-  
+void setup ()
+{  
   while (activated == 0)
   {
     Serial.begin (115200);
+    Serial1.begin (19200);
+
     Serial.print ("\n\n\n\n\n");
     Serial.print ("Initializing SD card...");
     if (!SD.begin (chipSelect)) 
@@ -54,19 +52,36 @@ void setup()
   AnalogReading = 0;
   AnalogSampleTime = millis ();
   AnalogReading = analogRead (ECsensorPin);
-  digitalWrite (ack, HIGH);
+  Serial1.write ('a');
 }
 
 void loop ()
 {
-  switch (digitalRead (sync))
+  Serial1.write ('a');
+  if (Serial1.available ())
+  {
+    switch (Serial1.read ())
+    {
+      case 'a':
+        record = HIGH;
+        break;
+      case 'z':
+        record = LOW;
+        break;
+      default:
+        Serial.println ("Tx sent a wrong message");
+        exit (0);
+    }
+  }
+
+  switch (record)
   {
     case HIGH:
       if (!myFile)
       {
         Serial.print ("Opening File Number: ");
         Serial.println (fileIndex);
-        sprintf(fileName, "%02d.txt", fileIndex);
+        sprintf (fileName, "%02d.txt", fileIndex);
         if (SD.exists (fileName)) {SD.remove (fileName);}
         myFile = SD.open (fileName, FILE_WRITE);
         if (myFile) {Serial.println ("File Created");}
@@ -103,4 +118,5 @@ void rx_receive (void)
   myFile.print (AnalogSampleTime);
   myFile.print ('\t');
   myFile.println (AnalogReading);
+  // Serial.println (AnalogReading);
 }

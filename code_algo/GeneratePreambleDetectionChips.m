@@ -1,7 +1,7 @@
 function rval = GeneratePreambleDetectionChips(pchip, L)
 %% 
 % oversampling code are composed of {1,-1,0}
-% we need to change all '0's to its preceding non-zero value
+% we need to change all "0"s to its preceding non-zero value
 rval = pchip;
 lastIdx = 1;
 for k = 2:length(pchip)
