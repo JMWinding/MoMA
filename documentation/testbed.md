@@ -36,6 +36,26 @@ The RX Arduino setting is much more easier, which only requires connecting the [
 
 The TX Arduino and the RX Arduino are synchronized through "Serial1", which requires connection of TX Arduino Pin18 to RX Arduino Pin19, and TX Arduino Pin19 to RX Arduino Pin18.
 
+## How to conduct experiments
+
+The data can be collected following these steps:
+
+1. Set up the whole testbed, including but not limited to
+    * Connect the tubes, pumps and the EC reader;
+    * Connect the Arduino control and measuring circuit (put the SD cards in the Arduino module);
+    * Fill the background water tank and the information solution tank, and deplete the waste tank;
+    * Modify the `fileIndex` variable in both TX and RX Arduino codes to specify the index of the experiment (avoid overwriting), and upload the code to the Arduinos.
+2. Start the background flow pump.
+3. Press the "reset" buttion on the TX Arduino.
+4. Once the TX Arduino serial monitor shows `Waiting for RX setup...`, press the "reset" button on the RX Arduino.
+5. Wait for the data to be collected. The testbed will first fill the tubes, then conduct experiments.
+    * During this phase, the TX and RX Arduino Serial monitor should concurrently show a new file index when a new experiment trace starts.
+6. Stop the testbed if any of the following cases happens
+    * The background water tank or the information solution tank depletes;
+    * The waste tank fills;
+    * Enough data has been collected;
+    * Error happens that the TX or RX Arduino serial monitor displays unexpected messages.
+
 ## Coding
 
 We tested several different coding, each running a different Arduino code and requiring a separate `.txt` file in the TX Arduino SD card. The example scripts are for Gold code (length 7), Goldman code (length 14), and OOC code (length 14). Following are the explanations for each scheme.

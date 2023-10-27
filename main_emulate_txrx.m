@@ -21,7 +21,7 @@ T = 125;
 T2 = T;
 Lp = 16;
 Lp2 = Lp;
-pumpstr = "2-3-4-5";
+pumpstr = "3-4";
 code = "goldman";
 if ~exist("notes", "var")
 notes = arrayfun(@(a)(string(sprintf("%02d",a))),randi([1 40],[2 1]));
@@ -47,12 +47,12 @@ rxIn.weights_ce = GetCEWeights(221);
 rxIn.sameMo = length(datanote)==1;
 
 %% rxOut
-% rxIn.algoPD = "gt";
-% rxIn.algoCE = "gt";
-% rxIn.mode = "dc";
-% rxOut = decode_mmo_coherent_MMoNTxSW11loop(rxIn);
-% disp(cell2mat(rxOut.BER));
-% disp("----");
+rxIn.algoPD = "gt";
+rxIn.algoCE = "gt";
+rxIn.mode = "dc";
+rxOut = decode_mmo_coherent_MMoNTxSW11loop(rxIn);
+disp(cell2mat(rxOut.BER));
+disp("----");
 
 % rxIn.algoPD = "gt";
 % rxIn.algoCE = "af0";
@@ -61,13 +61,13 @@ rxIn.sameMo = length(datanote)==1;
 % disp(cell2mat(rxOut.BER));
 % disp("----");
 
-rxIn.algoPD = "gt1";
-rxIn.algoCE = "af0";
-rxIn.mode = "dc";
-rxOut = decode_mmo_coherent_MMoNTxSW11loop(rxIn);
-disp(rxOut.PDOff);
-disp(cell2mat(rxOut.BER));
-disp("----");
+% rxIn.algoPD = "gt1";
+% rxIn.algoCE = "af0";
+% rxIn.mode = "dc";
+% rxOut = decode_mmo_coherent_MMoNTxSW11loop(rxIn);
+% disp(rxOut.PDOff);
+% disp(cell2mat(rxOut.BER));
+% disp("----");
 
 % rxIn.algoPD = "sc";
 % rxIn.algoCE = "af0";
@@ -82,15 +82,15 @@ disp("------------------------------");
 if false
     %%
     figure("units","normalized","outerposition",[0 0 1 1]);
-    for j = 1:size(txOut.xBit,1)
-    for i = 1:nTx
-        subplot(size(txOut.xBit,1), nTx, (j-1)*size(txOut.xBit,1)+i);
+    for j = 1:size(rxIn.xBit,1)
+    for i = 1:size(rxIn.xBit,2)
+        subplot(size(rxIn.xBit,1), size(rxIn.xBit,2), (j-1)*size(rxIn.xBit,1)+i);
         hold on; box on; grid on;
-        stem(txOut.xBit{j,i});
+        stem(rxIn.xBit{j,i});
         stem(rxOut.dBit{j,i});
-    %     yyaxis right;
-    %     plot(txOut.xChannel.xCIR{j,i}, "k");
-    %     plot(rxOut.chan.hp{j,i}, "k");
+        yyaxis right;
+        plot(rxIn.xChannel.xCIR{j,i}, "-ok");
+        plot(rxOut.chan.hp{j,i}, "-xk");
     end
     end
 end

@@ -5,7 +5,7 @@ try betas = cirParam.betas; catch
     betas = cell(nMo,1); betas(:) = {[3;0.025;1.5;1;0;0.1]};
     % W, D, d, v_parallel, v_perpendicular, tau
 end
-try T = cirParam.T; catch T = 1e-1; end
+try T = cirParam.T; catch T = 100; end % [micro seconds]
 try Tmax = cirParam.Tmax; catch Tmax = 10; end
 try mode = cirParam.mode; catch mode = "max"; end
 
@@ -13,7 +13,7 @@ try mode = cirParam.mode; catch mode = "max"; end
 assert(numel(betas) == nMo);
 
 %%
-t = (0:T/10:Tmax).';
+t = (0:T*1e-3/10:Tmax).';
 
 cirs = cell(nMo,1);
 for j = 1:nMo

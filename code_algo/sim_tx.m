@@ -3,7 +3,7 @@ function txOut = sim_tx(params)
 try noiseb = params.xChannel.noiseb; catch, noiseb = 0; end
 try noisen = params.xChannel.noisen; catch, noisen = 0; end
 try noisep = params.xChannel.noisep; catch, noisep = 0; end
-try T = params.T; catch, T = 1e-1; end
+try T = params.T; catch, T = 100; end
 try nDegree = params.nDegree; catch, nDegree = 5; end
 try nTx = params.nTx; catch, nTx = 2; end
 try nBit = params.nBit; catch, nBit = 1000; end

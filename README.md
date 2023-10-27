@@ -75,4 +75,6 @@ Simply running these two scripts in sequence will generate all the reported figu
 
 [`main_emulate_txrx.m`](/main_emulate_txrx.m) is a cleaner version of `main_emulates_txrx_allloop.m`, which is used to debug the algorithms with a single experiment trace.
 
+[`main_sim_txrx.m`](/main_sim_txrx.m) is a main file which calls the simulation functions used in the early stage of this project. It has nothing to do with the experiment results though.
+
 For more details about the scripts, please refer to [Processing the data](/documentation/data_process.md).

@@ -123,6 +123,7 @@ end
 
 switch algoCE
     case "gt"
+        assert(algoPD=="gt");
         for i = 1:nTx
             chan.hp(:,i) = xChannel.xCIR(:,i);
             chan.hpre(:,i) = {pkOffset(i)};
@@ -320,6 +321,9 @@ while true
         lags_newp(~isinf(lags_new)) = inf;
         if sum(~isinf(lags_newp)) == 0
             % no new packet detected, so exit the while
+            break;
+        elseif algoCE == "gt"
+            lags_new(~isinf(lags_newp)) = lags_newp(~isinf(lags_newp));
             break;
         end
 
