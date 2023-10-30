@@ -208,6 +208,7 @@ void setup ()
     delay (1000);
     Serial.println ("Waiting...");
   }
+  delay (200);
   if (Serial1.read () != 'a')
   {
     Serial.println ("Rx sent a wrong message");
@@ -287,7 +288,7 @@ void loop () {
     for (int i = 0; i < nTx; i++)
     {
       #if debug
-      Serial.print (" (");
+      Serial.print ("(");
       Serial.print (motors[i]);
       Serial.print (", ");
       Serial.print (motorOffsets[i]);
@@ -302,7 +303,7 @@ void loop () {
       Serial.println (")");
       #endif
       
-      recordFile.print (" (");
+      recordFile.print ("(");
       recordFile.print (motors[i]);
       recordFile.print (", ");
       recordFile.print (motorOffsets[i]);
