@@ -34,7 +34,7 @@ void setup ()
   while (activated == 0)
   {
     Serial.begin (115200);
-    Serial1.begin (19200);
+    Serial1.begin (115200);
 
     Serial.print ("\n\n\n\n\n");
     Serial.print ("Initializing SD card...");

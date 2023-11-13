@@ -4,7 +4,7 @@ This git repository is the artifact of the Sigcomm 2023 paper "Towards Practical
 
 [![DOI](https://zenodo.org/badge/679340304.svg)](https://zenodo.org/badge/latestdoi/679340304)
 
-Our code as well as data are both available, while documentation is still under construction.
+Our code as well as data are both available.
 
 ## How to download this artifact?
 
@@ -75,6 +75,6 @@ Simply running these two scripts in sequence will generate all the reported figu
 
 [`main_emulate_txrx.m`](/main_emulate_txrx.m) is a cleaner version of `main_emulates_txrx_allloop.m`, which is used to debug the algorithms with a single experiment trace.
 
-[`main_sim_txrx.m`](/main_sim_txrx.m) is a main file which calls the simulation functions used in the early stage of this project. It has nothing to do with the experiment results though.
+[`main_sim_txrx.m`](/main_sim_txrx.m) is a main file which calls the simulation functions used in the early stage of this project. It has nothing to do with the experiment results though, but to familiarize new users to the repository.
 
 For more details about the scripts, please refer to [Processing the data](/documentation/data_process.md).

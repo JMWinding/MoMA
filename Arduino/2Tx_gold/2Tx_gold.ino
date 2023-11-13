@@ -91,7 +91,7 @@ void setup ()
 {
   // initialize serial communication with computer:
   Serial.begin (115200);
-  Serial1.begin (19200);
+  Serial1.begin (115200);
   
   // setup pins
   for (int i = 0; i < nTx; i++)
